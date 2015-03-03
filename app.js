@@ -8,7 +8,7 @@ var express = require("express")
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-var webPages = "/views/"
+var webPages = "/views/";
 //route functions
 function index(req, res){
 	res.setHeader("Content-Type", "text/html");
