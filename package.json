@@ -1,0 +1,30 @@
+{
+  "name": "free-code-chat",
+  "version": "0.0.0",
+  "description": "FCC Chat Project",
+  "main": "app.js",
+  "dependencies": {
+    "node": "~0.11.x",
+    "express": "~4.12.x",
+    "socket.io": "^1.3.x",
+    "path": "0.11.x"
+  },
+  "contributors": [
+    {
+      "name": "Cerissa Leach",
+      "email": "cerissaleachg@outlook.com"
+    },
+    {
+      "name": "Darryl Dixon",
+      "email": "piecedigitalstudios@gmail.com"
+    },
+    {
+      "name": "Thiago Ferreira",
+      "email": ""
+    },
+    {
+      "name": "Kian Moretz",
+      "email": ""
+    }
+  ]
+}
