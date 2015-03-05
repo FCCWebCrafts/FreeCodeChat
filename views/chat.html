@@ -2,15 +2,19 @@
 <html>
 	<head>
 		<title>Test Chat</title>
+        <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,300,400' rel='stylesheet' type='text/css'>
 		<link rel="stylesheet" type="text/css" href="/css/style.css" media="all">
 		<style type="text/css">
 			#chatbox{
+                font-family: 'Open Sans', sans-serif;
+                font-weight: 300;
 				margin:10% auto;
 				width: 40em;
 				height: 40em;
 				position: relative;
 				background: white;
-				border: 4px solid rgba(0,100,200,1);
+				border: 4px solid #CCC;
+                border-radius: 15px;
 			}
 			input{
 				position: absolute;
@@ -18,25 +22,38 @@
 				border: none;
 			}
 			input[type="text"]{
+                font-size: 12px;
+                padding: 3px;
+                -webkit-appearance: none;
+                -moz-appearance: none;
+                -ms-appearance: none;
+                appearance: none;
 				height: 2em;
-				background: rgba(100,200,250,1);
-				outline: 2px solid rgba(0,100,200,1);
+				background: rgba(0,0,0,0.1);
+                border-bottom-left-radius: 10px;
 				width: 90%;
 				left: 0;
 				color: black;
 			}
+            input:focus {
+                outline: none;
+            }
 			input[type="submit"]{
+                font-size: 12px;
 				height: 2em;
-				background: rgba(100,200,250,1);
-				outline: 2px solid rgba(0,100,200,1);
+				background: #CCC;
 				width: 10%;
 				right: 0;
 			}
 			#messages{
-		    width: 100%;
-		    height: 95%;
-		    overflow-y: auto;
-		    word-wrap: normal;
+                font-size: 20px;
+                padding-top: 5px;
+                padding-left: 5px;
+		        width: 100%;
+		        height: 95%;
+		        overflow-y: auto;
+		        word-wrap: normal;
+                list-style: none;
 			}
 			.chat:nth-of-type(even){
 			    background: rgba(0,150,250,.4);
@@ -71,7 +88,7 @@
 			<div id="messages"></div>
 			<form name="chatbox" action="">
 				<input id="msg" type="text" name="chat" placeholder="Type your message" focus>
-				<input type="submit" value="SEND">
+				<input type="submit" value="Send">
 			</form>
 		</div>
 		<script type="text/javascript" src="/socket.io/socket.io.js"></script>
