@@ -1,4 +1,15 @@
-var userName = prompt("What's your name? Must be at least 3 characters.");
+var userName;
+function setUserName(){
+	 userName = prompt("What's your name? Must be between 3-12 characters long.");
+	if(userName.length >14 ||
+		userName.match(/[\`\~\|\<\>\s,\?\*\&\^%\$#@!\(\)\\\/\{\}=+\;\:\"\']/ig) ||
+		userName.match(/[\-\_\.]/ig) &&
+		userName.match(/[\-\_\.]/ig).length > 1 ){
+		alert("User name cannot contain special characters.\n\n Exceptions: - _ . \n\n Limited to 1 use of one of these.");
+		setUserName();
+	}
+}
+setUserName();
 var userGiven;
 var date;
 var dateData;
@@ -63,11 +74,17 @@ socket.on("command", function(msg){
 // regex for emojis
 function regexFilter(filter){
 	//smiles
-filter = filter.replace(/(:\))/ig, "<img id='smile' src='/images/emojis/smile.png'>");
-filter = filter.replace(/(:\-\))/ig, "<img id='smile' src='/images/emojis/smile.png'>");
-	//indifferents
-filter = filter.replace(/(:\/)/ig, "<img id='indif' src='/images/emojis/indif.png'>");
-filter = filter.replace(/(:\-\/)/ig, "<img id='indif' src='/images/emojis/indif.png'>");
-return filter;
-console.log(filter);
+	filter = filter.replace(/(http(s)?[:\/\/]*)([a-z0-9\-]*)([.][a-z0-9\-]*)([.][a-z]{2,3})?([\/a-z0-9?=%_\-&#]*)?/ig, "<a href='" + filter.match(/(http(s)?[:\/\/]*)([a-z0-9\-]*)([.][a-z0-9\-]*)([.][a-z]{2,3})?([\/a-z0-9?=%_\-&#]*)?/ig) + "' target='_blank'>" + filter.match(/(http(s)?[:\/\/]*)([a-z0-9\-]*)([.][a-z0-9\-]*)([.][a-z]{2,3})?([\/a-z0-9?=%_\-&#]*)?/ig) + "</a>");
+	filter = filter.replace(/(:\))/ig, "<img id='smile' src='/images/emojis/smile.png'>");
+	filter = filter.replace(/(:\-\))/ig, "<img id='smile' src='/images/emojis/smile.png'>");
+		//indifferents
+	//filter = filter.replace(/([^a-z]:\/[^\/])/ig, "<img id='indif' src='/images/emojis/indif.png'>");
+	filter = filter.replace(/(:\-\/)/ig, "<img id='indif' src='/images/emojis/indif.png'>");
+	return filter;
+	console.log(filter);
 }
+
+//links
+$("#chatbox #messages a").on("click", function(){
+	alert("You are about to leave this page to visit a link posted in the chat. \n\n Do you wish to continue?");
+})
