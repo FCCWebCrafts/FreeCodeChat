@@ -55,14 +55,45 @@
 		        word-wrap: normal;
                 list-style: none;
 			}
+			.chat:nth-of-type(even){
+			    background: rgba(0,150,250,.4);
+			}
+			.update{
+			    background: rgba(0,250,150,.4);
+			}
+			.command{
+			    background: rgba(255,0,0,.3);
+			}
+			#smile, #indif{
+			    position: relative;
+			}
+			#smile{
+			    top: 2px;
+			    left: 0;
+			    width: 18px; height: 18px;
+			    display: inline-block;
+			    margin: 0 0em 0 0em;
+			}
+			#indif{
+			    top: 2px;
+			    left: 0;
+			    width: 18px; height: 18px;
+			    display: inline-block;
+			    margin: 0 0em 0 0em;
+			}
 		</style>
 	</head>
 	<body>
 		<div id="chatbox">
 			<div id="messages"></div>
 			<form name="chatbox" action="">
+<<<<<<< HEAD
 				<input id="msg" type="text" name="chat" placeholder="Type your message">
 				<input type="submit" value="Send">
+=======
+				<input id="msg" type="text" name="chat" placeholder="Type your message" focus>
+				<input type="submit" value="SEND">
+>>>>>>> upstream/master
 			</form>
 		</div>
 		<script type="text/javascript" src="/socket.io/socket.io.js"></script>
