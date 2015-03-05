@@ -1,8 +1,9 @@
 var userName = prompt("What's your name? Must be at least 3 characters.");
 var userGiven;
-var dateData = new Date();
-var hours = dateData.getHours();
-var minutes = dateData.getMinutes();
+var date;
+var dateData;
+var hours;
+var minutes;
 var timePeriod;
 var socket = io();
 //setup local time
@@ -21,7 +22,15 @@ function normalizeMinutes(n){
 	if (n < 10){n = "0" + n;}
 	return n;
 }
-date = normalizeHours(hours) + ":" + normalizeMinutes(minutes);
+function updateTime(){
+	var dateData = new Date();
+	var hours = dateData.getHours();
+	var minutes = dateData.getMinutes();
+	date = normalizeHours(hours) + ":" + normalizeMinutes(minutes);
+	window.setTimeout(updateTime, 100);
+	console.log(date);
+}
+updateTime();
 //socket emit events
 if(userName !== "" && userName.length >= 3){
 	socket.emit("join", userName);
