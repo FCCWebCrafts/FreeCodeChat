@@ -30,29 +30,47 @@ socket.on("illegal", function(res){
 
 // all else
 var userList;
-function getTime() {
+function getTimeNow(time) {
 	return moment().format('h:mm a');
+}
+function logDate(time){
+  var now = new Date().getTime();
+  var dif = Math.floor((((now - time) / (1000) )/60));
+  if(dif < 1){
+  	return dif +" seconds ago"}
+  	else
+  if( dif >= 1 && dif < 2){
+  		return dif + " minute ago"
+  	}
+  	else{
+  		return dif + " minutes ago"
+  	}
 }
 
 //socket emit events
 socket.on("user list", function(list){
 	list = list.split(" ");
 	list.pop();
-	userList = list;
+	userList = list.join(", ") + ".";
+	$("#user-list").text(userList);
 	console.log("User list: " + userList.length);
 });
+socket.on("chat log", function(time, who, msg){
+	$("#messages").append($("<li class='chat'>").html("[" + logDate(time) + "] <span class='user'> " + who + "</span>: " + regexFilter(msg) ) );
+	$("#messages")[0].scrollTop = $("#messages")[0].scrollHeight;
 
+});
 socket.on("chat message", function(who, msg){
-	$("#messages").append($("<li class='chat'>").html("[" + getTime() + "] <span class='user'> " + who + "</span>: " + regexFilter(msg) ) );
+	$("#messages").append($("<li class='chat'>").html("[" + getTimeNow() + "] <span class='user'> " + who + "</span>: " + regexFilter(msg) ) );
 	$("#messages")[0].scrollTop = $("#messages")[0].scrollHeight;
 
 });
 socket.on("update", function(msg){
-	$("#messages").append($("<li class='update'>").html("[" + getTime() + "] " + msg) );
+	$("#messages").append($("<li class='update'>").html("[" + getTimeNow() + "] " + msg) );
 	$("#messages")[0].scrollTop = $("#messages")[0].scrollHeight;
 });
 socket.on("command", function(msg){
-	$("#messages").append($("<li class='command'>").html("[" + getTime() + "] " + msg) );
+	$("#messages").append($("<li class='command'>").html("[" + getTimeNow() + "] " + msg) );
 	$("#messages")[0].scrollTop = $("#messages")[0].scrollHeight;
 });
 

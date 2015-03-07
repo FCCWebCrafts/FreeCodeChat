@@ -7,12 +7,7 @@ var express = require("express")
 , port		= process.env['PORT'] || 3007;
 
 app.use(express.static(path.join(__dirname, 'public')));
-var scripterResponse = [
-	"Don't be that guy...",
-	"Come on man...",
-	"Not nice...",
-	"Cut it out..."
-];
+
 var webPages = "/views/";
 //route functions
 function index(req, res){
@@ -32,13 +27,10 @@ var users = {};
 var rawUserList = "";
 var userCount = 0;
 var history = [];
-var historyLimit = 25;
+var historyLimit = 35;
 
 //chat server connection
 io.on("connection", function(socket){
-	//socket.on("error", function(err){
-		//console.log(err);
-	//});
 	socket.on("validate", function(name){
 		console.log("running validation...");
 		for(var key in users){
@@ -76,7 +68,7 @@ io.on("connection", function(socket){
 			users[socket.id] = name;
 			io.emit("update", users[socket.id] + " has connected to the server!");
 			for(var log in history){
-				io.to(socket.id).emit("chat message", "" + history[log].userName, history[log].message);
+				io.to(socket.id).emit("chat log", history[log].time , history[log].userName, history[log].message);
 			}
 			rawUserList = "";
 			for(var key in users){
@@ -100,10 +92,6 @@ io.on("connection", function(socket){
 				typeof msg === "object" ){
 				//console.log("Snagged scripter.");
 				io.to(socket.id).emit("illegal", "Illegal Operation.");
-				/*
-				io.to(socket.id).emit("command", scripterResponse[Math.floor(Math.random(scripterResponse.length)*scripterResponse.length) ]);
-				console.log(Math.floor(Math.random(scripterResponse.length)*scripterResponse.length) );
-				*/
 				return false;
 			}
 			msg = msg.replace(/[<]/ig, "&lt;");
@@ -140,7 +128,8 @@ io.on("connection", function(socket){
 				history.push(
 						{
 							"userName": users[socket.id],
-							"message": msg
+							"message": msg,
+							"time": new Date().getTime()
 						}
 					);
 				if(history.length > historyLimit){
@@ -149,7 +138,6 @@ io.on("connection", function(socket){
 				//console.log(history);
 			}
 		}
-		//socket.broadcast.emit("chat message", msg);
 		console.log(users[socket.id] + " - " + msg);
 	});//end chat message
 	//on user disconncet
