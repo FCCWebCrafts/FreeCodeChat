@@ -23,7 +23,7 @@
 	//get relative of chat log for new users
 	function logDate(time){
 		var now = new Date().getTime();
-		var dif = Math.floor((((now - time) / (1000) )/60));
+		var dif = Math.floor( ( (now - time) / (1000) ) / 60);
 		if(dif < 1){
 			return "less than a minute ago"
 		}

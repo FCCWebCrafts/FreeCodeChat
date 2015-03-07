@@ -1,3 +1,4 @@
 /.project
 private/js
 node_modules
+.sass-cache
