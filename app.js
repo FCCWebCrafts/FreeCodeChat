@@ -7,7 +7,12 @@ var express = require("express")
 , port		= process.env['PORT'] || 3007;
 
 app.use(express.static(path.join(__dirname, 'public')));
-
+var scripterResponse = [
+	"Don't be that guy...",
+	"Come on man...",
+	"Not nice...",
+	"Cut it out..."
+];
 var webPages = "/views/";
 //route functions
 function index(req, res){
@@ -24,32 +29,76 @@ app.get("/chat", chatPage);
 //socket
 // connection and chat receiving.
 var users = {};
+var rawUserList = "";
 var userCount = 0;
 var history = [];
 var historyLimit = 25;
 
 //chat server connection
 io.on("connection", function(socket){
-	socket.on("join", function(name){
-		users[socket.id] = name;
-		io.emit("update", users[socket.id] + " has connected to the server!");
-		for(var log in history){
-			io.to(socket.id).emit("chat message", "" + history[log].userName, history[log].message);
+	//socket.on("error", function(err){
+		//console.log(err);
+	//});
+	socket.on("validate", function(name){
+		console.log("running validation...");
+		for(var key in users){
+			if(users[key] === name){
+				io.to(socket.id).emit("used");
+				//console.log(name);
+				//console.log("taken");
+				name = "";
+				return false;
+			}
 		}
-		userCount = Object.keys(users).length;
-		console.log(name + " connected");
-		console.log("Users: " + userCount);
+		io.to(socket.id).emit("open");
+		//console.log(name);
+		//console.log("open");
+	});
+	socket.on("join", function(name){
+		//console.log("name: " + name);
+		if(typeof name === "function" ){
+			io.to(socket.id).emit("illegal", "Illegal operation.")
+			return false;
+		} else
+		if(name.match(/[\~\<\>]/ig) ){
+			name = name.replace(/[<]/ig, "&lt;");
+			name = name.replace(/[>]/ig, "&gt;");
+			io.to(socket.id).emit("illegal", "Illegal operation.")
+			return false;
+		} else
+		{
+			users[socket.id] = name;
+			io.emit("update", users[socket.id] + " has connected to the server!");
+			for(var log in history){
+				io.to(socket.id).emit("chat message", "" + history[log].userName, history[log].message);
+			}
+			rawUserList = "";
+			for(var key in users){
+				rawUserList += users[key] + " ";
+			}
+			io.emit("user list", rawUserList);
+			userCount = Object.keys(users).length;
+			console.log(name + " connected");
+			console.log("Users: " + userCount);
+		}
 	});//end on join
 	//on chat msg
 	socket.on("chat message", function(msg){
 		//validate user
-		if(!users[socket.id]){
+		if(!users[socket.id] ){
 			return false;
 		} else
 		{//check script tags
-			/*if(msg.match(/(<[a-z]*[a-z0-9=\"\'\/\s]*?>)/i)){
-				io.to(socket.id).emit("command", "Unauthorized string combination blocked.");
-			} else*/
+			console.log(typeof msg === "function");
+			if(typeof msg === "function"){
+				//console.log("Snagged scripter.");
+				io.to(socket.id).emit("illegal", "Illegal Operation.");
+				/*
+				io.to(socket.id).emit("command", scripterResponse[Math.floor(Math.random(scripterResponse.length)*scripterResponse.length) ]);
+				console.log(Math.floor(Math.random(scripterResponse.length)*scripterResponse.length) );
+				*/
+				return false;
+			}
 			msg = msg.replace(/[<]/ig, "&lt;");
 			msg = msg.replace(/[>]/ig, "&gt;");
 			//check if list command
@@ -68,10 +117,10 @@ io.on("connection", function(socket){
 			if(msg.match(/^([\/]users)/i)){
 				var cmdMsg = "";
 				if(userCount > 1){
-					cmdMsg + "command", "There are " + userCount + " concurrent users.";
+					cmdMsg = "There are " + userCount + " concurrent users.";
 				}
 					else{
-					cmdMsg = "command", "There is " + userCount + " concurrent user.";
+					cmdMsg = "There is " + userCount + " concurrent user.";
 				}
 				io.to(socket.id).emit("command", cmdMsg);
 			} else //default chat message
@@ -91,7 +140,7 @@ io.on("connection", function(socket){
 		}
 		//socket.broadcast.emit("chat message", msg);
 		console.log(users[socket.id] + " - " + msg);
-	});
+	});//end chat message
 	//on user disconncet
 	socket.on("disconnect", function(){
 		io.emit("update", users[socket.id] + " has disconnected from the server.");
