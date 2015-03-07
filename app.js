@@ -55,12 +55,18 @@ io.on("connection", function(socket){
 		//console.log("open");
 	});
 	socket.on("join", function(name){
-		//console.log("name: " + name);
-		if(typeof name === "function" ){
+		console.log("name: " + name);
+		console.log("type of name: " + typeof name);
+		if(typeof name === "function" ||
+			typeof name === "object" ){
 			io.to(socket.id).emit("illegal", "Illegal operation.")
 			return false;
 		} else
-		if(name.match(/[\~\<\>]/ig) ){
+		if(name.length <3 ||
+			name.length >14 ||
+			name.match(/[\`\~\|\<\>\s,\?\*\&\^%\$#@!\(\)\\\/\{\}=+\;\:\"\']/ig) ||
+			name.match(/[\-\_\.]/ig) &&
+			name.match(/[\-\_\.]/ig).length > 1 ){
 			name = name.replace(/[<]/ig, "&lt;");
 			name = name.replace(/[>]/ig, "&gt;");
 			io.to(socket.id).emit("illegal", "Illegal operation.")
@@ -90,7 +96,8 @@ io.on("connection", function(socket){
 		} else
 		{//check script tags
 			console.log(typeof msg === "function");
-			if(typeof msg === "function"){
+			if(typeof msg === "function" ||
+				typeof msg === "object" ){
 				//console.log("Snagged scripter.");
 				io.to(socket.id).emit("illegal", "Illegal Operation.");
 				/*

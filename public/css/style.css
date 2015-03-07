@@ -1,1 +1,152 @@
-*{box-sizing:border-box;font-family:sans-serif}body{margin:0 auto;background:#F0F0F0;}#box{position:relative;margin:0 50%;top:4em;width:30em;height:30em;display:-webkit-box;display:-moz-box;display:-ms-flexbox;display:-webkit-flex;display:flex;transform:translateX(-50%);-o-transform:translateX(-50%);-ms-transform:translateX(-50%);-moz-transform:translateX(-50%);-webkit-transform:translateX(-50%);flex-flow:row wrap;-o-flex-flow:row wrap;-ms-flex-flow:row wrap;-moz-flex-flow:row wrap;-webkit-flex-flow:row wrap;align-items:center;-o-align-items:center;-ms-align-items:center;-moz-align-items:center;-webkit-align-items:center;justify-content:space-around;-o-justify-content:space-around;-ms-justify-content:space-around;-moz-justify-content:space-around;-webkit-justify-content:space-around;border-radius:1em;-o-border-radius:1em;-ms-border-radius:1em;-moz-border-radius:1em;-webkit-border-radius:1em;background:#00c8fa}h1{display:inline-block;margin:0 auto;padding:0}#triangle{width:0em;height:0em;border-left:140px solid transparent;border-bottom:200px solid #ffdc00;border-right:140px solid transparent;position:relative}#triangle:after{position:absolute;top:7em;left:-0.2em;content:'!';transform:scale(10)}
+* {
+	box-sizing: border-box;
+	font-family: sans-serif;
+}
+body {
+	margin: 0 auto;
+	background: #F0F0F0;
+}
+/*TEMPORARY - under construction page styling*/
+#box {
+	position: relative;
+	margin: 0 50%;
+	top: 4em;
+	width: 30em;
+	height: 30em;
+	display: -webkit-box;
+	display: -moz-box;
+	display: -ms-flexbox;
+	display: -webkit-flex;
+	display: flex;
+	transform: translateX(-50%);
+	-o-transform: translateX(-50%);
+	-ms-transform: translateX(-50%);
+	-moz-transform: translateX(-50%);
+	-webkit-transform: translateX(-50%);
+	flex-flow: row wrap;
+	-o-flex-flow: row wrap;
+	-ms-flex-flow: row wrap;
+	-moz-flex-flow: row wrap;
+	-webkit-flex-flow: row wrap;
+	align-items: center;
+	-o-align-items: center;
+	-ms-align-items: center;
+	-moz-align-items: center;
+	-webkit-align-items: center;
+	justify-content: space-around;
+	-o-justify-content: space-around;
+	-ms-justify-content: space-around;
+	-moz-justify-content: space-around;
+	-webkit-justify-content: space-around;
+	border-radius: 1em;
+	-o-border-radius: 1em;
+	-ms-border-radius: 1em;
+	-moz-border-radius: 1em;
+	-webkit-border-radius: 1em;
+	background: #00c8fa;
+}
+h1 {
+	display: inline-block;
+	margin: 0 auto;
+	padding: 0;
+}
+#triangle {
+	width: 0em;
+	height: 0em;
+	border-left: 140px solid transparent;
+	border-bottom: 200px solid #ffdc00;
+	border-right: 140px solid transparent;
+	position: relative;
+}
+#triangle:after {
+	position: absolute;
+	top: 7em;
+	left: -0.2em;
+	content: '!';
+	transform: scale(10);
+	-ms-transform: scale(10);
+	-moz-transform: scale(10);
+	-webkit-transform: scale(10);
+}
+/*chat styling*/
+#chatbox{
+	position: fixed;
+	top: 1em;
+	left: 50%;
+	font-family: 'Open Sans', sans-serif;
+	font-weight: 300;
+	width: 40em;
+	height: 90%;
+	background: white;
+	border: 4px solid #CCC;
+	border-radius: 15px;
+	transform: translateX(-50%);
+	-ms-transform: translateX(-50%);
+	-moz-transform: translateX(-50%);
+	-webkit-transform: translateX(-50%);
+	}
+input{
+	position: absolute;
+	bottom: 0;
+	border: none;
+}
+input[type="text"]{
+	font-size: 12px;
+	padding: 3px;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	-ms-appearance: none;
+	appearance: none;
+	height: 2em;
+	background: rgba(0,0,0,0.1);
+	border-bottom-left-radius: 10px;
+	width: 90%;
+	left: 0;
+	color: black;
+}
+input:focus {
+	outline: none;
+}
+input[type="submit"]{
+	font-size: 12px;
+	height: 2em;
+	background: #CCC;
+	width: 10%;
+	right: 0;
+}
+#messages{
+	font-size: 20px;
+	padding-top: 5px;
+	padding-left: 5px;
+	width: 100%;
+	height: 95%;
+	overflow-y: auto;
+	word-wrap: normal;
+	list-style: none;
+}
+.chat:nth-of-type(even){
+	background: rgba(0,150,250,.4);
+}
+.update{
+	background: rgba(0,250,150,.4);
+}
+.command{
+	background: rgba(255,0,0,.3);
+}
+#smile, #indif{
+	position: relative;
+}
+#smile{
+	top: 2px;
+	left: 0;
+	width: 18px; height: 18px;
+	display: inline-block;
+	margin: 0 0em 0 0em;
+}
+#indif{
+	top: 2px;
+	left: 0;
+	width: 18px; height: 18px;
+	display: inline-block;
+	margin: 0 0em 0 0em;
+}
