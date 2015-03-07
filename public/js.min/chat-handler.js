@@ -72,12 +72,12 @@
 	});
 	//socket response on update
 	socket.on("update", function(msg){
-		$("#messages").append($("<li class='update'>").html("[" + getTimeNow() + "] " + msg) );
+		$("#messages").append($("<li class='update'>").html("[UPDATE] " + msg) );
 		scrollToBottom();
 	});
 	//socket response on command
 	socket.on("command", function(msg){
-		$("#messages").append($("<li class='command'>").html("[" + getTimeNow() + "] " + msg) );
+		$("#messages").append($("<li class='command'>").html("[COMMAND] " + msg) );
 		scrollToBottom();
 	});
 	//filter chat for links and emites
