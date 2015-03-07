@@ -69,7 +69,7 @@ function regexFilter(filter){
 }
 
 //send message
-$("form").submit(function(event){
+$('form').submit(function(event){
 	if(userGiven === true){
 		socket.emit("chat message", $("#msg").val());
 		$("#msg").val("");
@@ -78,8 +78,11 @@ $("form").submit(function(event){
 });
 
 //links
-$("#chatbox #messages a").on("click", function(){
-	alert("You are about to leave this page to visit a link posted in the chat. \n\n Do you wish to continue?");
+$('#chatbox #messages').on('click', 'a', function(event) {
+	var result = confirm("You are about to leave this page to visit a link posted in the chat. \n\n Do you wish to continue?");
+	if (!result) {
+		event.preventDefault();
+	}
 })
 
 //focus
