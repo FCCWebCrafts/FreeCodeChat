@@ -108,6 +108,10 @@ io.on("connection", function(socket){
 			}
 			msg = msg.replace(/[<]/ig, "&lt;");
 			msg = msg.replace(/[>]/ig, "&gt;");
+			//check empty string
+			if(msg === ""){
+				return false;
+			} else
 			//check if list command
 			if(msg.match(/^([\/]list)/i)){
 				var cmdUserList = "";
