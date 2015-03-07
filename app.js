@@ -28,6 +28,12 @@ var rawUserList = "";
 var userCount = 0;
 var history = [];
 var historyLimit = 35;
+function resetList(){
+	rawUserList = "";
+	for(var key in users){
+		rawUserList += users[key] + " ";
+	}
+}
 
 //chat server connection
 io.on("connection", function(socket){
@@ -70,10 +76,7 @@ io.on("connection", function(socket){
 			for(var log in history){
 				io.to(socket.id).emit("chat log", history[log].time , history[log].userName, history[log].message);
 			}
-			rawUserList = "";
-			for(var key in users){
-				rawUserList += users[key] + " ";
-			}
+			resetList();
 			io.emit("user list", rawUserList);
 			userCount = Object.keys(users).length;
 			console.log(name + " connected");
@@ -146,6 +149,8 @@ io.on("connection", function(socket){
 		console.log(users[socket.id] + " Disconnected.");
 		delete users[socket.id];
 		userCount = Object.keys(users).length;
+		resetList();
+		io.emit("user list", rawUserList);
 	});
 });
 //emit chat messages

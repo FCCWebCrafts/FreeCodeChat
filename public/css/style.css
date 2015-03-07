@@ -79,6 +79,8 @@ h1 {
 /*chat styling*/
 /* line 95, ../../private/scss/style.scss */
 * {
+	transition: all .5s ease-in-out ;
+	-webkit-transition: all .5s ease-in-out ;
   box-sizing: border-box;
   font-family: 'Open Sans', sans-serif;
 }
