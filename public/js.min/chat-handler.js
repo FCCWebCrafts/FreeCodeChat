@@ -22,18 +22,13 @@
 	}
 	//get relative of chat log for new users
 	function logDate(time){
-		var now = new Date().getTime();
-		var dif = Math.floor( ( (now - time) / (1000) ) / 60);
-		if(dif < 1){
-			return "less than a minute ago"
-		}
-		  else
-		if( dif >= 1 && dif < 2){
-		  	return dif + " minute ago"
-		}
-		  else{
-		  	return dif + " minutes ago"
-		}
+		var now = new Date(time);
+		var hours = now.getHours();
+		var minutes = now.getMinutes();
+		if(hours > 12){ hours -= 12;}
+		if(hours === 0){ hours = 12;}
+		if(minutes < 9){ minutes = "0" + minutes;}
+		return hours + ":" + minutes;
 	}
 	function scrollToBottom() {
 		$("#messages")[0].scrollTop = $("#messages")[0].scrollHeight;
@@ -61,7 +56,7 @@
 	});
 	//socket oresponse on chat log
 	socket.on("chat log", function(time, who, msg){
-		$("#messages").append($("<li class='chat'>").html("[" + logDate(time) + "] <span class='user'> " + who + "</span>: " + regexFilter(msg) ) );
+		$("#messages").append($("<li class='chat'>").html("[<span class='log'>" + logDate(time) + "</span>] <span class='user'> " + who + "</span>: " + regexFilter(msg) ) );
 		$("#messages")[0].scrollTop = $("#messages")[0].scrollHeight;
 
 	});
