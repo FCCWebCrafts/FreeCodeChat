@@ -87,7 +87,7 @@
 		filter = filter.replace(/(:\))/ig, "<img id='smile' src='/images/emojis/smile.png'>");
 		filter = filter.replace(/(:\-\))/ig, "<img id='smile' src='/images/emojis/smile.png'>");
 		//indifferents
-		//filter = filter.replace(/([^a-z]:\/[^\/])/ig, "<img id='indif' src='/images/emojis/indif.png'>");
+		filter = filter.replace(/\B(:\/)\B/ig, "<img id='indif' src='/images/emojis/indif.png'>");
 		filter = filter.replace(/(:\-\/)/ig, "<img id='indif' src='/images/emojis/indif.png'>");
 		return filter;
 	}
