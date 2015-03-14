@@ -101,9 +101,6 @@
 		}
 		return filter;
 	}
-	$(".notification").on("create", function(){
-		console.log("created");
-	});
 	function killNot(){
 		$(".notification:last").animate({"height": "2em"}, 200);
 		setTimeout(function(){
