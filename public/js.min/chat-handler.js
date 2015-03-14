@@ -2,6 +2,7 @@
 	var socket = io();
 	var userName;
 	var userList;
+	var regUser;
 	//set user name
 	function setUserName(){
 		userName = prompt("What's your name? Must be between 3-12 characters long.");
@@ -41,6 +42,7 @@
 
 	socket.on("open", function(){
 		socket.emit("join", userName);
+		regUser = new RegExp("[@]" + userName, "ig");
 	});
 
 	socket.on("illegal", function(res){
@@ -52,17 +54,16 @@
 		list.pop();
 		userList = list.join(", ") + ".";
 		$("#user-list").text(userList);
-		console.log("User list: " + userList.length);
 	});
 	//socket oresponse on chat log
 	socket.on("chat log", function(time, who, msg){
-		$("#messages").append($("<li class='chat'>").html("[<span class='log'>" + logDate(time) + "</span>] <span class='user'> " + who + "</span>: " + regexFilter(msg) ) );
+		$("#messages").append($("<li class='chat'>").html("[<span class='log'>" + logDate(time) + "</span>] <span class='user'> " + who + "</span>: " + regexFilter(msg, who) ) );
 		$("#messages")[0].scrollTop = $("#messages")[0].scrollHeight;
 
 	});
 	//socket response on chat message
 	socket.on("chat message", function(who, msg){
-		$("#messages").append($("<li class='chat'>").html("[" + getTimeNow() + "] <span class='user'> " + who + "</span>: " + regexFilter(msg) ) );
+		$("#messages").append($("<li class='chat'>").html("[" + getTimeNow() + "] <span class='user'> " + who + "</span>: " + regexFilter(msg, who) ) );
 		scrollToBottom();
 	});
 	//socket response on update
@@ -76,15 +77,38 @@
 		scrollToBottom();
 	});
 	//filter chat for links and emites
-	function regexFilter(filter){
+	function regexFilter(filter, person){
 		//smiles
 		filter = filter.replace(/(http(s)?[:\/\/]*)([a-z0-9\-]*)([.][a-z0-9\-]*)([.][a-z]{2,3})?([\/a-z0-9?=%_\-&#]*)?/ig, "<a href='" + filter.match(/(http(s)?[:\/\/]*)([a-z0-9\-]*)([.][a-z0-9\-]*)([.][a-z]{2,3})?([\/a-z0-9?=%_\-&#]*)?/ig) + "' target='_blank'>" + filter.match(/(http(s)?[:\/\/]*)([a-z0-9\-]*)([.][a-z0-9\-]*)([.][a-z]{2,3})?([\/a-z0-9?=%_\-&#]*)?/ig) + "</a>");
+		//smiles
 		filter = filter.replace(/(:\))/ig, "<img id='smile' src='/images/emojis/smile.png'>");
 		filter = filter.replace(/(:\-\))/ig, "<img id='smile' src='/images/emojis/smile.png'>");
 		//indifferents
 		filter = filter.replace(/\B(:\/)\B/ig, "<img id='indif' src='/images/emojis/indif.png'>");
 		filter = filter.replace(/(:\-\/)/ig, "<img id='indif' src='/images/emojis/indif.png'>");
+
+		if(filter.match(regUser) ){
+			var ment = filter.indexOf("@");
+			var sub = filter.substring(ment-20,ment+20);
+			//console.log(filter.slice(ment-30) );
+			if(filter.slice(ment-20).length > sub.length){
+				$("body").append("<div class='notification'>"+person+" Mentioned You: "+sub+"...</div>");
+			} else {
+				$("body").append("<div class='notification'>"+person+" Mentioned You: "+sub+"</div>");
+			}
+			filter = filter.replace(regUser, "<span class='mention'>@"+userName+"</span>");
+			killNot();
+		}
 		return filter;
+	}
+	$(".notification").on("create", function(){
+		console.log("created");
+	});
+	function killNot(){
+		$(".notification:last").animate({"height": "2em"}, 200);
+		setTimeout(function(){
+			$(".notification:first").remove();
+		}, 5000)
 	}
 	//chat message submission
 	$('form').submit(function(event){

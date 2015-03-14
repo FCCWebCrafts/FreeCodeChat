@@ -169,10 +169,12 @@ input[type="submit"] {
 
 /* line 159, ../../private/scss/style.scss */
 #messages {
+  position: absolute;
+  top: 0;
+  left: 0;
   font-size: 20px;
-  padding-bottom: 1.5em;
   width: 100%;
-  height: 100%;
+  height: 96%;
   overflow-y: auto;
   word-wrap: normal;
   list-style: none;
@@ -234,4 +236,25 @@ input[type="submit"] {
   border: 5px solid #cccccc;
   border-radius: 15px;
   overflow-x: auto;
+}
+.notification{
+  position: fixed;
+  /*(z-index: 5;*/
+  padding: .2em 0;
+  text-align: center;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 0em;
+  overflow: hidden;
+  background: rgba(0, 250, 190, 1);
+}
+.notification:nth-of-type(even){
+  background: rgba(255, 0, 10, 1) !important; 
+}
+.mention{
+  background: rgba(0,0,0, .2);
+  box-shadow: inset 0 0 0px 1px rgba(0,0,0,.1);
+  color: white;
+  border-radius: 5px;
 }
