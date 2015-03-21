@@ -41,7 +41,9 @@
 	});
 
 	socket.on("open", function(){
-		socket.emit("join", userName);
+		var room = window.location.href.match(/(http(s)?[:\/\/]*)([a-z0-9\-]*)([.:][a-z0-9\-]*)([.][a-z]{2,3})?([\/a-z0-9?=%_\-&#]*)?/ig)[0];
+		socket.emit("join", userName, room);
+		console.log( room );
 		regUser = new RegExp("[@](" + userName + ")\\b", "gi");
 	});
 

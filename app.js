@@ -35,7 +35,7 @@ var historyLimit = 35;
 function resetList(){
 	rawUserList = "";
 	for(var key in users){
-		rawUserList += users[key] + " ";
+		rawUserList += users[key].name + " ";
 	}
 }
 
@@ -58,7 +58,7 @@ io.on("connection", function(socket){
 		//console.log(name);
 		//console.log("open");
 	});
-	socket.on("join", function(name){
+	socket.on("join", function(name, userRoom){
 		if(typeof name === "function" ||
 			typeof name === "object" ){
 			io.to(socket.id).emit("illegal", "Illegal operation.")
@@ -78,7 +78,10 @@ io.on("connection", function(socket){
 			users[socket.id] = {"name": name, "room": room};console.log(users);
 			io.in(room).emit("update", users[socket.id].name + " has connected to the server!");
 			for(var log in history){
-				io.to(socket.id).emit("chat log", history[log].time , history[log].userName, history[log].message);
+				if(history[log].userName.room === userRoom) {
+					console.log(history[log].userName);
+					io.to(socket.id).emit("chat log", history[log].time, history[log].userName, history[log].message);
+				}
 			}
 			resetList();
 			io.in(room).emit("user list", rawUserList);
@@ -134,7 +137,7 @@ io.on("connection", function(socket){
 				io.in(room).emit("chat message", "" + users[socket.id].name, msg);
 				history.push(
 						{
-							"userName": users[socket.id].name,
+							"userName": users[socket.id],
 							"message": msg,
 							"time": new Date().getTime()
 						}
@@ -145,16 +148,18 @@ io.on("connection", function(socket){
 				//console.log(history);
 			}
 		}
-		console.log(users[socket.id] + " - " + msg);
+		console.log(users[socket.id].name + " - " + msg);
 	});//end chat message
 	//on user disconncet
 	socket.on("disconnect", function(){
-		io.in(room).emit("update", users[socket.id].name + " has disconnected from the server.");
-		console.log(users[socket.id] + " Disconnected.");
-		delete users[socket.id];
-		userCount = Object.keys(users).length;
-		resetList();
-		io.emit("user list", rawUserList);
+		if (users[socket.id]){
+			io.in(room).emit("update", users[socket.id].name + " has disconnected from the server.");
+			console.log(users[socket.id].name + " Disconnected.");
+			delete users[socket.id];
+			userCount = Object.keys(users).length;
+			resetList();
+			io.emit("user list", rawUserList);
+		}
 	});
 });
 //emit chat messages
