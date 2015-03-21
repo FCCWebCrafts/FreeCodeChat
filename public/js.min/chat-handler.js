@@ -81,7 +81,7 @@
 			$("#chat-box input[type='submit']").prop("disabled", true);
 			caretPosition = getCaretPos(this) - 1;
 		}
-		if ( $(this).val().charAt( getCaretPos(this) - 1).match(/[\s]/gi) ){
+		if ( $(this).val().charAt( getCaretPos(this) - 1).match(/[\s]/gi) || $(this).val().charAt( getCaretPos(this) - 1) === "" ){
 			//hide list box
 			$("#listBox").css({"display": "none"});
 			//re-enable submit button
@@ -145,16 +145,6 @@
 		$("#listBox").css({"display": "none"});
 		selection = 1;
 	}
-/*
-if ( $("#chat-box input[type='submit']").attr("style") === "display: inline-block") {
-				$("#chat-box input[type='submit']").prop("disabled", true);
-				$("#listBox").css({"display": "none"});
-				var formData = $("#chat-box").serializeArray();
-				formData[0].value += " pound it";
-			  var data = formData[0].value;
-			} else {
-
-			}*/
 
 	//socket oresponse on chat log
 	socket.on("chat log", function(time, who, msg){
