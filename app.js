@@ -19,8 +19,12 @@ function chatPage(req, res){
 	res.sendFile(__dirname + webPages + "chat.html");
 }
 //routes
-app.get("/", index);
-app.get("/chat", chatPage);
+//app.get("/", index); ///////cleared route
+app.get("/", chatPage);
+app.get("/:name", chatPage);
+app.get("*", function(req, res){
+	res.end("<h1>404, page not found</h1>", 404);
+});
 //socket
 // connection and chat receiving.
 var users = {};
@@ -37,6 +41,8 @@ function resetList(){
 
 //chat server connection
 io.on("connection", function(socket){
+	var room = socket.handshake.headers.referer;
+	socket.join(room);
 	socket.on("validate", function(name){
 		console.log("running validation...");
 		for(var key in users){
@@ -53,8 +59,6 @@ io.on("connection", function(socket){
 		//console.log("open");
 	});
 	socket.on("join", function(name){
-		console.log("name: " + name);
-		console.log("type of name: " + typeof name);
 		if(typeof name === "function" ||
 			typeof name === "object" ){
 			io.to(socket.id).emit("illegal", "Illegal operation.")
@@ -71,13 +75,13 @@ io.on("connection", function(socket){
 			return false;
 		} else
 		{
-			users[socket.id] = name;
-			io.emit("update", users[socket.id] + " has connected to the server!");
+			users[socket.id] = {"name": name, "room": room};console.log(users);
+			io.in(room).emit("update", users[socket.id].name + " has connected to the server!");
 			for(var log in history){
 				io.to(socket.id).emit("chat log", history[log].time , history[log].userName, history[log].message);
 			}
 			resetList();
-			io.emit("user list", rawUserList);
+			io.in(room).emit("user list", rawUserList);
 			userCount = Object.keys(users).length;
 			console.log(name + " connected");
 			console.log("Users: " + userCount);
@@ -109,9 +113,9 @@ io.on("connection", function(socket){
 				index = 1;
 				for(var vals in users){
 					if(index === userCount){
-						cmdUserList += users[vals] + ".";}
+						cmdUserList += users[vals].name + ".";}
 						else{
-						cmdUserList += users[vals] + ", ";}
+						cmdUserList += users[vals].name + ", ";}
 					index++;
 				}
 				io.to(socket.id).emit("command", "Users: " + cmdUserList);
@@ -127,10 +131,10 @@ io.on("connection", function(socket){
 				io.to(socket.id).emit("command", cmdMsg);
 			} else //default chat message
 			{
-				io.emit("chat message", "" + users[socket.id], msg);
+				io.in(room).emit("chat message", "" + users[socket.id].name, msg);
 				history.push(
 						{
-							"userName": users[socket.id],
+							"userName": users[socket.id].name,
 							"message": msg,
 							"time": new Date().getTime()
 						}
@@ -145,7 +149,7 @@ io.on("connection", function(socket){
 	});//end chat message
 	//on user disconncet
 	socket.on("disconnect", function(){
-		io.emit("update", users[socket.id] + " has disconnected from the server.");
+		io.in(room).emit("update", users[socket.id].name + " has disconnected from the server.");
 		console.log(users[socket.id] + " Disconnected.");
 		delete users[socket.id];
 		userCount = Object.keys(users).length;
