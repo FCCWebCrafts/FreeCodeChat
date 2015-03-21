@@ -122,12 +122,19 @@
 			return false;
 		}
 	});
+	//mouse hover over user mention
+	$(document).on({
+		mouseenter: function(){
+			$(".matched-user").removeClass("selected");
+			selection = $(this).data("index");
+			$(this).addClass("selected");
+		}
+	}, ".matched-user");
 	//mouse press on user mention
 	$(document).on("click", ".matched-user",function(){
-		selection = $(this).data("index");
-		console.log(selection);
 		selectMention();
 	});
+
 	function selectMention(){
 		//re-enable the submit button
 		$("#chat-box input[type='submit']").prop("disabled", false);
