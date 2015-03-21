@@ -42,7 +42,8 @@
 
 	socket.on("open", function(){
 		socket.emit("join", userName);
-		regUser = new RegExp("[@]" + userName, "ig");
+		regUser = new RegExp("[@](" + userName + ")\\b", "gi");
+		console.log(regUser);
 	});
 
 	socket.on("illegal", function(res){
@@ -86,8 +87,8 @@
 		//indifferents
 		filter = filter.replace(/\B(:\/)\B/ig, "<img id='indif' src='/images/emojis/indif.png'>");
 		filter = filter.replace(/(:\-\/)/ig, "<img id='indif' src='/images/emojis/indif.png'>");
-
-		if(filter.match(regUser) ){
+		//match mentions
+		if(filter.match(regUser) && person.toLowerCase() !== userName.toLowerCase() ){
 			var ment = filter.indexOf("@");
 			var sub = filter.substring(ment-20,ment+20);
 			//console.log(filter.slice(ment-30) );
