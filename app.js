@@ -62,7 +62,7 @@ io.on("connection", function(socket){
 		} else
 		if(name.length <3 ||
 			name.length >14 ||
-			name.match(/[\`\~\|\<\>\s,\?\*\&\^%\$#@!\(\)\\\/\{\}=+\;\:\"\']/ig) ||
+			name.match(/[\[\]\`\~\|\<\>\s,\?\*\&\^%\$#@!\(\)\\\/\{\}=+\;\:\"\']/ig) ||
 			name.match(/[\-\_\.]/ig) &&
 			name.match(/[\-\_\.]/ig).length > 1 ){
 			name = name.replace(/[<]/ig, "&lt;");
