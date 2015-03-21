@@ -3,6 +3,7 @@
 	var userName;
 	var userList, listArray;
 	var regUser;
+	var room = window.location.href.match(/(http(s)?[:\/\/]*)([a-z0-9\-]*)([.:][a-z0-9\-]*)([.][a-z]{2,3})?([\/a-z0-9?=%_\-&#]*)?/ig)[0];
 	//set user name
 	function setUserName(){
 		userName = prompt("What's your name? Must be between 3-12 characters long.");
@@ -41,7 +42,6 @@
 	});
 
 	socket.on("open", function(){
-		var room = window.location.href.match(/(http(s)?[:\/\/]*)([a-z0-9\-]*)([.:][a-z0-9\-]*)([.][a-z]{2,3})?([\/a-z0-9?=%_\-&#]*)?/ig)[0];
 		socket.emit("join", userName, room);
 		console.log( room );
 		regUser = new RegExp("[@](" + userName + ")\\b", "gi");
@@ -148,7 +148,7 @@
 		selection = 1;
 	}
 
-	//socket oresponse on chat log
+	//socket response on chat log
 	socket.on("chat log", function(time, who, msg){
 		$("#messages").append($("<li class='chat'>").html("[<span class='log'>" + logDate(time) + "</span>] <span class='user'> " + who + "</span>: " + regexFilter(msg, who) ) );
 		$("#messages")[0].scrollTop = $("#messages")[0].scrollHeight;
@@ -206,7 +206,7 @@
 	}
 	//chat message submission
 	$('form').submit(function(event){
-		socket.emit("chat message", $("#msg").val());
+		socket.emit("chat message", $("#msg").val(), room);
 		$("#msg").val("");
 		event.preventDefault();
 	});

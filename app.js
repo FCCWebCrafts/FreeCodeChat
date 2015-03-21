@@ -28,16 +28,9 @@ app.get("*", function(req, res){
 //socket
 // connection and chat receiving.
 var users = {};
-var rawUserList = "";
 var userCount = 0;
 var history = [];
 var historyLimit = 35;
-function resetList(){
-	rawUserList = "";
-	for(var key in users){
-		rawUserList += users[key].name + " ";
-	}
-}
 
 //chat server connection
 io.on("connection", function(socket){
@@ -83,15 +76,13 @@ io.on("connection", function(socket){
 					io.to(socket.id).emit("chat log", history[log].time, history[log].userName, history[log].message);
 				}
 			}
-			resetList();
-			io.in(room).emit("user list", rawUserList);
 			userCount = Object.keys(users).length;
 			console.log(name + " connected");
 			console.log("Users: " + userCount);
 		}
 	});//end on join
 	//on chat msg
-	socket.on("chat message", function(msg){
+	socket.on("chat message", function(msg, userRoom){
 		//validate user
 		if(!users[socket.id] ){
 			return false;
@@ -112,24 +103,29 @@ io.on("connection", function(socket){
 			} else
 			//check if list command
 			if(msg.match(/^([\/]list)/i)){
-				var cmdUserList = "";
+				var cmdUserList = [];
 				index = 1;
 				for(var vals in users){
-					if(index === userCount){
-						cmdUserList += users[vals].name + ".";}
-						else{
-						cmdUserList += users[vals].name + ", ";}
-					index++;
+					if(users[vals].room === userRoom) {
+						cmdUserList.push(users[vals].name);
+					}
 				}
+				cmdUserList = cmdUserList.join(", ") + ".";
 				io.to(socket.id).emit("command", "Users: " + cmdUserList);
 			} else //check if users commands
 			if(msg.match(/^([\/]users)/i)){
 				var cmdMsg = "";
-				if(userCount > 1){
-					cmdMsg = "There are " + userCount + " concurrent users.";
+				var count = 0;
+				for(var vals in users){
+					if(users[vals].room === userRoom) {
+						count++;
+					}
+				}
+				if(count > 1){
+					cmdMsg = "There are " + count + " concurrent users.";
 				}
 					else{
-					cmdMsg = "There is " + userCount + " concurrent user.";
+					cmdMsg = "There is " + count + " concurrent user.";
 				}
 				io.to(socket.id).emit("command", cmdMsg);
 			} else //default chat message
@@ -157,8 +153,7 @@ io.on("connection", function(socket){
 			console.log(users[socket.id].name + " Disconnected.");
 			delete users[socket.id];
 			userCount = Object.keys(users).length;
-			resetList();
-			io.emit("user list", rawUserList);
+			//io.emit("user list", rawUserList);
 		}
 	});
 });
