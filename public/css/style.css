@@ -255,3 +255,19 @@ input[type="submit"] {
   color: white;
   border-radius: 5px;
 }
+#listBox{
+  position: absolute;
+  display: none;
+  bottom: 1.5em;
+  background: white;
+  border: 5px solid #cccccc;
+  border-radius: 15px;
+}
+.match-box-str{
+  background: rgba(0,0,0, .2);
+  color: white;
+  border-radius: 10px;
+}
+.matched-user{
+  display: block;
+}

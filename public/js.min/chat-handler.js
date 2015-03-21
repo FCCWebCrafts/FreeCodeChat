@@ -1,7 +1,7 @@
 ~(function () {
 	var socket = io();
 	var userName;
-	var userList;
+	var userList, listArray;
 	var regUser;
 	//set user name
 	function setUserName(){
@@ -51,11 +51,48 @@
 	});
 	//get user list
 	socket.on("user list", function(list){
-		list = list.split(" ");
-		list.pop();
-		userList = list.join(", ") + ".";
+		listArray = list.split(" ");
+		listArray.pop();
+		userList = listArray.join(", ") + ".";
 		$("#user-list").text(userList);
 	});
+	//get caret positon
+	function getCaretPos(input) {
+  // Internet Explorer Caret Position (TextArea)
+    if (document.selection && document.selection.createRange) {
+        var range = document.selection.createRange();
+        var bookmark = range.getBookmark();
+        var caret_pos = bookmark.charCodeAt(2) - 2;
+    } else {
+        // Firefox Caret Position (TextArea)
+        if (input.setSelectionRange)
+            var caret_pos = input.selectionStart;
+    }
+    return caret_pos;
+	}
+
+	//mention
+	var caretPosition = 0;
+	$("#msg").on("keyup", function(){
+		if ( $(this).val().charAt( getCaretPos(this) - 1).match(/[@]/gi) ){
+			$("#listBox").css({"display": "inline-block"});
+			caretPosition = getCaretPos(this) - 1;
+		}
+		if ( $(this).val().charAt( getCaretPos(this) - 1).match(/\\s/gi) ){
+			$("#listBox").css({"display": "none"});
+		}
+		var subStr = $(this).val().split("").slice(caretPosition+1).join("");
+		var matchedUser = new RegExp("\\b(" + subStr + ")", "gi");
+console.log(subStr);
+		$("#listBox").html("");
+		listArray.map(function(elem){
+			if (elem.match(matchedUser) ) {
+				elem = elem.replace(matchedUser, "<span class='match-box-str'>"+subStr+"</span>");
+				$("#listBox").append("<li class='matched-user'>" + elem + "</li>");
+			}
+		});
+	});
+
 	//socket oresponse on chat log
 	socket.on("chat log", function(time, who, msg){
 		$("#messages").append($("<li class='chat'>").html("[<span class='log'>" + logDate(time) + "</span>] <span class='user'> " + who + "</span>: " + regexFilter(msg, who) ) );
@@ -80,7 +117,11 @@
 	//filter chat for links and emites
 	function regexFilter(filter, person){
 		//smiles
-		filter = filter.replace(/(http(s)?[:\/\/]*)([a-z0-9\-]*)([.][a-z0-9\-]*)([.][a-z]{2,3})?([\/a-z0-9?=%_\-&#]*)?/ig, "<a href='" + filter.match(/(http(s)?[:\/\/]*)([a-z0-9\-]*)([.][a-z0-9\-]*)([.][a-z]{2,3})?([\/a-z0-9?=%_\-&#]*)?/ig) + "' target='_blank'>" + filter.match(/(http(s)?[:\/\/]*)([a-z0-9\-]*)([.][a-z0-9\-]*)([.][a-z]{2,3})?([\/a-z0-9?=%_\-&#]*)?/ig) + "</a>");
+		filter = filter.replace(/(http(s)?[:\/\/]*)([a-z0-9\-]*)([.][a-z0-9\-]*)([.][a-z]{2,3})?([\/a-z0-9?=%_\-&#]*)?/ig, "<a href='" +
+		 filter.match(/(http(s)?[:\/\/]*)([a-z0-9\-]*)([.][a-z0-9\-]*)([.][a-z]{2,3})?([\/a-z0-9?=%_\-&#]*)?/ig) +
+		  "' target='_blank'>" +
+		   filter.match(/(http(s)?[:\/\/]*)([a-z0-9\-]*)([.][a-z0-9\-]*)([.][a-z]{2,3})?([\/a-z0-9?=%_\-&#]*)?/ig) +
+		    "</a>");
 		//smiles
 		filter = filter.replace(/(:\))/ig, "<img id='smile' src='/images/emojis/smile.png'>");
 		filter = filter.replace(/(:\-\))/ig, "<img id='smile' src='/images/emojis/smile.png'>");
