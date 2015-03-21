@@ -95,7 +95,7 @@ body {
 #app-box {
   position: fixed;
   width: 100vw;
-  height: 98%;
+  height: 100%;
   top: 1em;
   left: 50%;
   max-width: 40em;
@@ -103,6 +103,7 @@ body {
   -ms-transform: translate(-50%, 0);
   -moz-transform: translate(-50%, 0);
   -webkit-transform: translate(-50%, 0);
+  padding: 0 0 4.4em;
 }
 
 /* line 112, ../../private/scss/style.scss */
@@ -111,7 +112,7 @@ body {
   margin: 0;
   font-weight: 300;
   width: 100%;
-  height: 90%;
+  height: 100%;
   background: white;
   border: 4px solid #cccccc;
   border-radius: 15px;
@@ -169,17 +170,20 @@ input[type="submit"] {
 
 /* line 159, ../../private/scss/style.scss */
 #messages {
-  position: absolute;
   top: 0;
   left: 0;
   font-size: 20px;
   width: 100%;
-  height: 96%;
+  height: 100%;
   overflow-y: auto;
   word-wrap: normal;
   list-style: none;
 }
-
+.messages-holder{
+  display: block;
+  height: 100%;
+  padding: 0 0 1.5em;
+}
 /* line 168, ../../private/scss/style.scss */
 .chat:nth-of-type(even) {
   background: #cccccc;
@@ -231,7 +235,7 @@ input[type="submit"] {
   margin: 0;
   font-weight: 300;
   width: 100%;
-  height: 4em;
+  height: 3.5em;
   background: white;
   border: 5px solid #cccccc;
   border-radius: 15px;
