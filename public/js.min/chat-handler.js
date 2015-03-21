@@ -8,7 +8,7 @@
 		userName = prompt("What's your name? Must be between 3-12 characters long.");
 		if(userName.length <3 ||
 			userName.length >14 ||
-			userName.match(/[\`\~\|\<\>\s,\?\*\&\^%\$#@!\(\)\\\/\{\}=+\;\:\"\']/ig) ||
+			userName.match(/[\[\]\`\~\|\<\>\s,\?\*\&\^%\$#@!\(\)\\\/\{\}=+\;\:\"\']/ig) ||
 			userName.match(/[\-\_\.]/ig) &&
 			userName.match(/[\-\_\.]/ig).length > 1 ){
 			alert("User name cannot contain special characters.\n\n Exceptions: - _ . \n\n Limited to 1 use of one of these.");
@@ -43,7 +43,6 @@
 	socket.on("open", function(){
 		socket.emit("join", userName);
 		regUser = new RegExp("[@](" + userName + ")\\b", "gi");
-		console.log(regUser);
 	});
 
 	socket.on("illegal", function(res){
@@ -66,32 +65,89 @@
     } else {
         // Firefox Caret Position (TextArea)
         if (input.setSelectionRange)
-            var caret_pos = input.selectionStart;
+          var caret_pos = input.selectionStart;
     }
     return caret_pos;
 	}
 
 	//mention
-	var caretPosition = 0;
+	var caretPosition = 0, selection = 1, subStr, listLen;
+	//check for keyup events
 	$("#msg").on("keyup", function(){
 		if ( $(this).val().charAt( getCaretPos(this) - 1).match(/[@]/gi) ){
+			//show list box
 			$("#listBox").css({"display": "inline-block"});
+			//disable submit so selection of user in list box can be made
+			$("#chat-box input[type='submit']").prop("disabled", true);
 			caretPosition = getCaretPos(this) - 1;
 		}
-		if ( $(this).val().charAt( getCaretPos(this) - 1).match(/\\s/gi) ){
+		if ( $(this).val().charAt( getCaretPos(this) - 1).match(/[\s]/gi) ){
+			//hide list box
 			$("#listBox").css({"display": "none"});
+			//re-enable submit button
+			$("#chat-box input[type='submit']").prop("disabled", false);
 		}
-		var subStr = $(this).val().split("").slice(caretPosition+1).join("");
+		subStr = $(this).val().split("").slice(caretPosition+1).join("");
 		var matchedUser = new RegExp("\\b(" + subStr + ")", "gi");
-console.log(subStr);
 		$("#listBox").html("");
-		listArray.map(function(elem){
-			if (elem.match(matchedUser) ) {
-				elem = elem.replace(matchedUser, "<span class='match-box-str'>"+subStr+"</span>");
-				$("#listBox").append("<li class='matched-user'>" + elem + "</li>");
+		listArray.map(function(elem, index){
+			if (elem.match(matchedUser) && $("#listBox").attr("style") === "display: inline-block;") {
+				var match = elem.replace(matchedUser, "<span class='match-box-str'>"+subStr+"</span>");
+				$("#listBox").append("<li class='matched-user' data-index='" + (index+1) + "' data-name='" + elem + "'>" + match + "</li>");
 			}
 		});
+		$("#listBox li:nth-child(" + selection + ")").addClass("selected");
 	});
+	//check for keydown events
+	$("#msg").keydown(function(k){
+		listLen = $("#listBox .matched-user").size();
+		//check for enter key
+		if (k.keyCode === 13){
+			if ( $("#listBox").attr("style") === "display: inline-block;" ) {
+				selectMention();
+			}
+		}
+		//check for up key
+		if (k.keyCode === 38) {
+			selection--;
+			if (selection < 1){ selection = listLen}
+			$("#listBox li").removeClass("selected");
+			return false;
+		}
+		//check for down key
+		if (k.keyCode === 40) {
+			selection++;
+			if (selection > listLen){ selection = 1}
+			$("#listBox li").removeClass("selected");
+			return false;
+		}
+	});
+	//mouse press on user mention
+	$(document).on("click", ".matched-user",function(){
+		selection = $(this).data("index");
+		console.log(selection);
+		selectMention();
+	});
+	function selectMention(){
+		//re-enable the submit button
+		$("#chat-box input[type='submit']").prop("disabled", false);
+		//attach the full user names to the input value
+		$("#msg").val( $("#msg").val() + $("#listBox li:nth-child(" + selection +
+		 ")").data("name").split("").slice(subStr.length).join("") );
+		//hide list box
+		$("#listBox").css({"display": "none"});
+		selection = 1;
+	}
+/*
+if ( $("#chat-box input[type='submit']").attr("style") === "display: inline-block") {
+				$("#chat-box input[type='submit']").prop("disabled", true);
+				$("#listBox").css({"display": "none"});
+				var formData = $("#chat-box").serializeArray();
+				formData[0].value += " pound it";
+			  var data = formData[0].value;
+			} else {
+
+			}*/
 
 	//socket oresponse on chat log
 	socket.on("chat log", function(time, who, msg){

@@ -270,4 +270,9 @@ input[type="submit"] {
 }
 .matched-user{
   display: block;
+  position: relative;
+}
+.selected{
+  background: rgba(50, 50, 50, .8);
+  color: white;
 }
