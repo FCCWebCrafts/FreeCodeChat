@@ -16,6 +16,10 @@
 			</form>
 			<span class="fail-message">{{fail}}</span>
 			<span class="fine">(No special characters allowed, only a hyphen)</span>
+			<h4>Possible Roooms: </h4>
+			{% for links in rooms %}
+				<a href="{{ links }}">{{ links }}</a>
+			{% endfor %}
 		</div>
 	</body>
 </html>

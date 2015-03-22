@@ -13,10 +13,18 @@ app.set("view engine", "html");
 app.set("views", __dirname + "/views");
 
 var webPages = "/views/";
+
+//variables
+var users = {};
+var rooms = [];
+var userCount = 0;
+var history = [];
+var historyLimit = 35;
+
 //route functions
 function landingPage(req, res){
 	res.setHeader("Content-Type", "text/html");
-	res.render("index.html", {"fail": ""});
+	res.render("index.html", {"fail": "", "rooms": rooms });
 }
 function howTo(req, res){
 	res.setHeader("Content-Type", "text/html");
@@ -45,16 +53,12 @@ app.get("*", function(req, res){
 	res.sendFile(__dirname + webPages + "notfound.html", 404);
 });
 //socket
-// connection and chat receiving.
-var users = {};
-var userCount = 0;
-var history = [];
-var historyLimit = 35;
 
 //chat server connection
 io.on("connection", function(socket){
 	var room = socket.handshake.headers.referer;
 	socket.join(room);
+
 	socket.on("validate", function(name){
 		console.log("running validation...");
 		for(var key in users){
@@ -87,11 +91,10 @@ io.on("connection", function(socket){
 			return false;
 		} else
 		{
-			users[socket.id] = {"name": name, "room": room};console.log(users);
+			users[socket.id] = {"name": name, "room": room};
 			io.in(room).emit("update", users[socket.id].name + " has connected to the server!");
 			for(var log in history){
 				if(history[log].userName.room === userRoom) {
-					console.log(history[log].userName);
 					io.to(socket.id).emit("chat log", history[log].time, history[log].userName.name, history[log].message);
 				}
 			}
@@ -107,6 +110,15 @@ io.on("connection", function(socket){
 			userCount = Object.keys(users).length;
 			console.log(name + " connected");
 			console.log("Users: " + userCount);
+
+			for(var id in users){
+				var used = false;
+				for(i = 0; i < rooms.length; i++){
+					console.log(rooms[i]);
+					if(users[id].room === rooms[i]){used = true;}
+				};
+				if(!used){rooms.push(users[id].room);}
+			}
 		}
 	});//end on join
 	//on chat msg
@@ -140,6 +152,16 @@ io.on("connection", function(socket){
 				}
 				cmdUserList = cmdUserList.join(", ") + ".";
 				io.to(socket.id).emit("command", "Users: " + cmdUserList);
+			} else
+			//check if listall command
+			if(msg.match(/^([\/]listall)/i)){
+				var cmdUserList = [];
+				index = 1;
+				for(var vals in users){
+					cmdUserList.push(users[vals].name);
+				}
+				cmdUserList = cmdUserList.join(", ") + ".";
+				io.to(socket.id).emit("command", "Users: " + cmdUserList);
 			} else //check if users commands
 			if(msg.match(/^([\/]users)/i)){
 				var cmdMsg = "";
@@ -148,6 +170,20 @@ io.on("connection", function(socket){
 					if(users[vals].room === userRoom) {
 						count++;
 					}
+				}
+				if(count > 1){
+					cmdMsg = "There are " + count + " concurrent users.";
+				}
+					else{
+					cmdMsg = "There is " + count + " concurrent user.";
+				}
+				io.to(socket.id).emit("command", cmdMsg);
+			} else //check if usersall commands
+			if(msg.match(/^([\/]usersall)/i)){
+				var cmdMsg = "";
+				var count = 0;
+				for(var vals in users){
+					count++;
 				}
 				if(count > 1){
 					cmdMsg = "There are " + count + " concurrent users.";
@@ -181,7 +217,6 @@ io.on("connection", function(socket){
 			console.log(users[socket.id].name + " Disconnected.");
 			delete users[socket.id];
 			userCount = Object.keys(users).length;
-			//io.emit("user list", rawUserList);
 		}
 	});
 });
