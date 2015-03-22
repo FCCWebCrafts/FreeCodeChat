@@ -11,6 +11,7 @@ body {
 
 /* line 41, ../../private/scss/style.scss */
 #box {
+  padding: 2em 0 2em;
   text-align: center;
   position: relative;
   margin: 0 50%;
@@ -89,7 +90,10 @@ body {
   padding: .3em 1em .7em;
   width: 6em;
 }
-
+.info-page ul{
+  margin: 0 auto;
+  width: 45%;
+}
 /*chat styling*/
 /* line 95, ../../private/scss/style.scss */
 * {

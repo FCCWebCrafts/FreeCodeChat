@@ -18,6 +18,10 @@ function landingPage(req, res){
 	res.setHeader("Content-Type", "text/html");
 	res.render("index.html", {"fail": ""});
 }
+function howTo(req, res){
+	res.setHeader("Content-Type", "text/html");
+	res.sendFile(__dirname + webPages + "info.html");
+}
 function goTo(req, res){
 	console.log(req.query);
 	res.setHeader("Content-Type", "text/html");
@@ -38,7 +42,7 @@ app.get("/howTo", howTo);
 app.get("/goTo", goTo);
 app.get("/:name", chatPage);
 app.get("*", function(req, res){
-	res.end("<h1>404, page not found</h1>", 404);
+	res.sendFile(__dirname + webPages + "notfound.html", 404);
 });
 //socket
 // connection and chat receiving.
