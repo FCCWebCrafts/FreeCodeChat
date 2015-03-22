@@ -6,8 +6,16 @@
 	</head>
 	<body>
 		<div id="box">
-			<h1>Under Construction</h1>
-			<div id="triangle"></div>
+			<h1>Welcome To</h1>
+			<span class="big-title">Free Code Chat</span>
+			<a class="button" href="/howTo">See Info</a>
+			<form method="get" action="/goTo">
+				<label for="room">Enter A Room Name: </label>
+				<input type="text" name="room" placeholder="Type room name..."><br>
+				<input type="submit" value="Submit">
+			</form>
+			<span class="fail-message">{{fail}}</span>
+			<span class="fine">(No special characters allowed, only a hyphen)</span>
 		</div>
 	</body>
 </html>

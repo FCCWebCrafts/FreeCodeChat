@@ -3,6 +3,7 @@
 	var userName;
 	var userList, listArray;
 	var regUser;
+	var room = window.location.href.match(/(http(s)?[:\/\/]*)([a-z0-9\-]*)([.:][a-z0-9\-]*)([.][a-z]{2,3})?([\/a-z0-9?=%_\-&#]*)?/ig)[0];
 	//set user name
 	function setUserName(){
 		userName = prompt("What's your name? Must be between 3-12 characters long.");
@@ -41,7 +42,7 @@
 	});
 
 	socket.on("open", function(){
-		socket.emit("join", userName);
+		socket.emit("join", userName, room);
 		regUser = new RegExp("[@](" + userName + ")\\b", "gi");
 	});
 
@@ -50,9 +51,9 @@
 	});
 	//get user list
 	socket.on("user list", function(list){
-		listArray = list.split(" ");
+		listArray = list.split(/[,.]/gi);
 		listArray.pop();
-		userList = listArray.join(", ") + ".";
+		userList = list;
 		$("#user-list").text(userList);
 	});
 	//get caret positon
@@ -146,7 +147,7 @@
 		selection = 1;
 	}
 
-	//socket oresponse on chat log
+	//socket response on chat log
 	socket.on("chat log", function(time, who, msg){
 		$("#messages").append($("<li class='chat'>").html("[<span class='log'>" + logDate(time) + "</span>] <span class='user'> " + who + "</span>: " + regexFilter(msg, who) ) );
 		$("#messages")[0].scrollTop = $("#messages")[0].scrollHeight;
@@ -185,7 +186,6 @@
 		if(filter.match(regUser) && person.toLowerCase() !== userName.toLowerCase() ){
 			var ment = filter.indexOf("@");
 			var sub = filter.substring(ment-20,ment+20);
-			//console.log(filter.slice(ment-30) );
 			if(filter.slice(ment-20).length > sub.length){
 				$("body").append("<div class='notification'>"+person+" Mentioned You: "+sub+"...</div>");
 			} else {
@@ -204,7 +204,7 @@
 	}
 	//chat message submission
 	$('form').submit(function(event){
-		socket.emit("chat message", $("#msg").val());
+		socket.emit("chat message", $("#msg").val(), room);
 		$("#msg").val("");
 		event.preventDefault();
 	});

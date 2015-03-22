@@ -4,43 +4,61 @@ var express = require("express")
 , http		= require("http").Server(app)
 , io 		= require('socket.io')(http)
 , path		= require("path")
+, cons 		= require("consolidate")
 , port		= process.env['PORT'] || 3007;
 
 app.use(express.static(path.join(__dirname, 'public')));
+app.engine("html", cons.swig);
+app.set("view engine", "html");
+app.set("views", __dirname + "/views");
 
 var webPages = "/views/";
 //route functions
-function index(req, res){
+function landingPage(req, res){
 	res.setHeader("Content-Type", "text/html");
-	res.sendFile(__dirname + webPages + "index.html");
+	res.render("index.html", {"fail": ""});
+}
+function howTo(req, res){
+	res.setHeader("Content-Type", "text/html");
+	res.sendFile(__dirname + webPages + "info.html");
+}
+function goTo(req, res){
+	console.log(req.query);
+	res.setHeader("Content-Type", "text/html");
+	if( !req.query.room.match(/[\[\]\`\~\|\<\>\s,\?\*\&\^%\$#@!\(\)\\\/\{\}=+\;\:\"\'_.]/gi) ){
+		res.redirect("http://" + req.headers.host + "/" + req.query.room.toLowerCase() );
+	} else {
+		res.render("index", {"fail": "please enter a valid room name."} );
+	}
 }
 function chatPage(req, res){
 	res.setHeader("Content-Type", "text/html");
 	res.sendFile(__dirname + webPages + "chat.html");
 }
 //routes
-app.get("/", index);
-app.get("/chat", chatPage);
+//app.get("/", index); ///////cleared route
+app.get("/", landingPage);
+app.get("/howTo", howTo);
+app.get("/goTo", goTo);
+app.get("/:name", chatPage);
+app.get("*", function(req, res){
+	res.sendFile(__dirname + webPages + "notfound.html", 404);
+});
 //socket
 // connection and chat receiving.
 var users = {};
-var rawUserList = "";
 var userCount = 0;
 var history = [];
 var historyLimit = 35;
-function resetList(){
-	rawUserList = "";
-	for(var key in users){
-		rawUserList += users[key] + " ";
-	}
-}
 
 //chat server connection
 io.on("connection", function(socket){
+	var room = socket.handshake.headers.referer;
+	socket.join(room);
 	socket.on("validate", function(name){
 		console.log("running validation...");
 		for(var key in users){
-			if(users[key] === name){
+			if(users[key].name === name){
 				io.to(socket.id).emit("used");
 				//console.log(name);
 				//console.log("taken");
@@ -52,9 +70,7 @@ io.on("connection", function(socket){
 		//console.log(name);
 		//console.log("open");
 	});
-	socket.on("join", function(name){
-		console.log("name: " + name);
-		console.log("type of name: " + typeof name);
+	socket.on("join", function(name, userRoom){
 		if(typeof name === "function" ||
 			typeof name === "object" ){
 			io.to(socket.id).emit("illegal", "Illegal operation.")
@@ -71,20 +87,30 @@ io.on("connection", function(socket){
 			return false;
 		} else
 		{
-			users[socket.id] = name;
-			io.emit("update", users[socket.id] + " has connected to the server!");
+			users[socket.id] = {"name": name, "room": room};console.log(users);
+			io.in(room).emit("update", users[socket.id].name + " has connected to the server!");
 			for(var log in history){
-				io.to(socket.id).emit("chat log", history[log].time , history[log].userName, history[log].message);
+				if(history[log].userName.room === userRoom) {
+					console.log(history[log].userName);
+					io.to(socket.id).emit("chat log", history[log].time, history[log].userName.name, history[log].message);
+				}
 			}
-			resetList();
-			io.emit("user list", rawUserList);
+			var toSub = [];
+			for(var vals in users){
+				if(users[vals].room === userRoom) {
+					toSub.push(users[vals].name);
+				}
+			}
+			toSub = toSub.join(",") + ".";
+			io.in(room).emit("user list", toSub);	
+
 			userCount = Object.keys(users).length;
 			console.log(name + " connected");
 			console.log("Users: " + userCount);
 		}
 	});//end on join
 	//on chat msg
-	socket.on("chat message", function(msg){
+	socket.on("chat message", function(msg, userRoom){
 		//validate user
 		if(!users[socket.id] ){
 			return false;
@@ -105,29 +131,34 @@ io.on("connection", function(socket){
 			} else
 			//check if list command
 			if(msg.match(/^([\/]list)/i)){
-				var cmdUserList = "";
+				var cmdUserList = [];
 				index = 1;
 				for(var vals in users){
-					if(index === userCount){
-						cmdUserList += users[vals] + ".";}
-						else{
-						cmdUserList += users[vals] + ", ";}
-					index++;
+					if(users[vals].room === userRoom) {
+						cmdUserList.push(users[vals].name);
+					}
 				}
+				cmdUserList = cmdUserList.join(", ") + ".";
 				io.to(socket.id).emit("command", "Users: " + cmdUserList);
 			} else //check if users commands
 			if(msg.match(/^([\/]users)/i)){
 				var cmdMsg = "";
-				if(userCount > 1){
-					cmdMsg = "There are " + userCount + " concurrent users.";
+				var count = 0;
+				for(var vals in users){
+					if(users[vals].room === userRoom) {
+						count++;
+					}
+				}
+				if(count > 1){
+					cmdMsg = "There are " + count + " concurrent users.";
 				}
 					else{
-					cmdMsg = "There is " + userCount + " concurrent user.";
+					cmdMsg = "There is " + count + " concurrent user.";
 				}
 				io.to(socket.id).emit("command", cmdMsg);
 			} else //default chat message
 			{
-				io.emit("chat message", "" + users[socket.id], msg);
+				io.in(room).emit("chat message", "" + users[socket.id].name, msg);
 				history.push(
 						{
 							"userName": users[socket.id],
@@ -141,16 +172,17 @@ io.on("connection", function(socket){
 				//console.log(history);
 			}
 		}
-		console.log(users[socket.id] + " - " + msg);
+		console.log(users[socket.id].name + " - " + msg);
 	});//end chat message
 	//on user disconncet
 	socket.on("disconnect", function(){
-		io.emit("update", users[socket.id] + " has disconnected from the server.");
-		console.log(users[socket.id] + " Disconnected.");
-		delete users[socket.id];
-		userCount = Object.keys(users).length;
-		resetList();
-		io.emit("user list", rawUserList);
+		if (users[socket.id]){
+			io.in(room).emit("update", users[socket.id].name + " has disconnected from the server.");
+			console.log(users[socket.id].name + " Disconnected.");
+			delete users[socket.id];
+			userCount = Object.keys(users).length;
+			//io.emit("user list", rawUserList);
+		}
 	});
 });
 //emit chat messages
