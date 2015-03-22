@@ -4,15 +4,28 @@ var express = require("express")
 , http		= require("http").Server(app)
 , io 		= require('socket.io')(http)
 , path		= require("path")
+, cons 		= require("consolidate")
 , port		= process.env['PORT'] || 3007;
 
 app.use(express.static(path.join(__dirname, 'public')));
+app.engine("html", cons.swig);
+app.set("view engine", "html");
+app.set("views", __dirname + "/views");
 
 var webPages = "/views/";
 //route functions
-function index(req, res){
+function landingPage(req, res){
 	res.setHeader("Content-Type", "text/html");
-	res.sendFile(__dirname + webPages + "index.html");
+	res.render("index.html", {"fail": ""});
+}
+function goTo(req, res){
+	console.log(req.query);
+	res.setHeader("Content-Type", "text/html");
+	if( !req.query.room.match(/[\[\]\`\~\|\<\>\s,\?\*\&\^%\$#@!\(\)\\\/\{\}=+\;\:\"\'_.]/gi) ){
+		res.redirect("http://" + req.headers.host + "/" + req.query.room.toLowerCase() );
+	} else {
+		res.render("index", {"fail": "please enter a valid room name."} );
+	}
 }
 function chatPage(req, res){
 	res.setHeader("Content-Type", "text/html");
@@ -20,7 +33,9 @@ function chatPage(req, res){
 }
 //routes
 //app.get("/", index); ///////cleared route
-app.get("/", chatPage);
+app.get("/", landingPage);
+app.get("/howTo", howTo);
+app.get("/goTo", goTo);
 app.get("/:name", chatPage);
 app.get("*", function(req, res){
 	res.end("<h1>404, page not found</h1>", 404);
@@ -76,6 +91,15 @@ io.on("connection", function(socket){
 					io.to(socket.id).emit("chat log", history[log].time, history[log].userName, history[log].message);
 				}
 			}
+			var toSub = [];
+			for(var vals in users){
+				if(users[vals].room === userRoom) {
+					toSub.push(users[vals].name);
+				}
+			}
+			toSub = toSub.join(", ") + ".";
+			io.in(room).emit("user list", toSub);	
+
 			userCount = Object.keys(users).length;
 			console.log(name + " connected");
 			console.log("Users: " + userCount);

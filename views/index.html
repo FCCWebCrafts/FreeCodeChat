@@ -6,8 +6,24 @@
 	</head>
 	<body>
 		<div id="box">
-			<h1>Under Construction</h1>
-			<div id="triangle"></div>
+			<h1>Welcome To</h1>
+			<span class="big-title">Free Code Chat</span>
+			<a class="button" href="/howTo">See Features</a>
+			<form method="get" action="/goTo">
+				<label for="room">Enter A Room Name: </label>
+				<input type="text" name="room" placeholder="Type room name..."><br>
+				<input type="submit" value="Submit">
+			</form>
+			<span class="fail-message">{{fail}}</span>
+			<span class="fine">(No special characters allowed, only a hyphen)</span>
 		</div>
+		<script type="text/javascript" src="/js.min/jquery-1.11.2.min.js"></script>
+		<script type="text/javascript">
+		$(document).ready(function(){
+			if( $(".fail-message").html() === "{{fail}}" ){
+				//$(".fail-message").css({"display": "none"});
+			}
+		});
+		</script>
 	</body>
 </html>

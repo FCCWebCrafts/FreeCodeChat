@@ -43,7 +43,6 @@
 
 	socket.on("open", function(){
 		socket.emit("join", userName, room);
-		console.log( room );
 		regUser = new RegExp("[@](" + userName + ")\\b", "gi");
 	});
 
@@ -52,9 +51,10 @@
 	});
 	//get user list
 	socket.on("user list", function(list){
-		listArray = list.split(" ");
+		console.log(list);
+		listArray = list.split(/[,.]/gi);
 		listArray.pop();
-		userList = listArray.join(", ") + ".";
+		userList = list;
 		$("#user-list").text(userList);
 	});
 	//get caret positon

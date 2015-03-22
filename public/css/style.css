@@ -1,79 +1,93 @@
 /* line 33, ../../private/scss/style.scss */
 * {
-  box-sizing: border-box;
   font-family: sans-serif;
 }
 
 /* line 37, ../../private/scss/style.scss */
 body {
   margin: 0 auto;
-  background: #0096c8;
+  background: #f0f0f0;
 }
 
 /* line 41, ../../private/scss/style.scss */
 #box {
+  text-align: center;
   position: relative;
   margin: 0 50%;
   top: 4em;
-  width: 30em;
-  height: 30em;
-  display: -webkit-box;
-  display: -moz-box;
-  display: -ms-flexbox;
-  display: -webkit-flex;
-  display: flex;
+  width: 100%;
+  max-width: 1200px;
+  display: block;
   transform: translateX(-50%);
   -o-transform: translateX(-50%);
   -ms-transform: translateX(-50%);
   -moz-transform: translateX(-50%);
   -webkit-transform: translateX(-50%);
-  flex-flow: row wrap;
-  -o-flex-flow: row wrap;
-  -ms-flex-flow: row wrap;
-  -moz-flex-flow: row wrap;
-  -webkit-flex-flow: row wrap;
-  align-items: center;
-  -o-align-items: center;
-  -ms-align-items: center;
-  -moz-align-items: center;
-  -webkit-align-items: center;
-  justify-content: space-around;
-  -o-justify-content: space-around;
-  -ms-justify-content: space-around;
-  -moz-justify-content: space-around;
-  -webkit-justify-content: space-around;
   border-radius: 1em;
-  -o-border-radius: 1em;
   -ms-border-radius: 1em;
   -moz-border-radius: 1em;
   -webkit-border-radius: 1em;
-  background: #00c8fa;
+  background: rgba(200, 200, 200, 1);
 }
 
 /* line 51, ../../private/scss/style.scss */
-h1 {
-  display: inline-block;
+#box h1 {
+  text-align: center;
+  display: block;
   margin: 0 auto;
+  width: 100%;
   padding: 0;
 }
-
-/* line 56, ../../private/scss/style.scss */
-#triangle {
-  width: 0em;
-  height: 0em;
-  border-left: 140px solid transparent;
-  border-bottom: 200px solid #ffdc00;
-  border-right: 140px solid transparent;
-  position: relative;
+.big-title{
+  font-size: 4em;
+  font-weight: bold;
+  text-align: center;
+  display: block;
+  width: 100%;
 }
-
-/* line 64, ../../private/scss/style.scss */
-#triangle:after {
-  position: absolute;
-  top: 7em;
-  left: -0.2em;
-  content: '!';
-  transform: scale(10);
+.button{
+  display: block;
+  text-decoration: none;
+  color: black;
+  border-radius: 2em;
+  -ms-border-radius: 2em;
+  -moz-border-radius: 2em;
+  -webkit-border-radius: 2em;
+  background: rgba(0, 255, 160, 1);
+  padding: .5em 1em;
+  font-size: 2em;
+  width: 8em;
+  margin: 1em auto;
+}
+.button:hover{
+  background: rgba(0, 205, 160, 1);
+}
+#box form{
+  margin: 4em auto 2em;
+}
+#box form label{
+  font-size: 1.5em;
+}
+#box form input{
+  position: relative;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  margin: 0.5em auto;
+  text-align: center;
+  background: white;
+  font-size: 1.5em;
+  width: 16em;
+  padding: .5em 1em;
+  border-radius: 1em;
+  -ms-border-radius: 1em;
+  -moz-border-radius: 1em;
+  -webkit-border-radius: 1em;
+}
+#box form input[type="submit"]{
+  vertical-align: text-top;
+  padding: .3em 1em .7em;
+  width: 6em;
 }
 
 /*chat styling*/
@@ -85,11 +99,6 @@ h1 {
   font-family: 'Open Sans', sans-serif;
 }
 
-/* line 99, ../../private/scss/style.scss */
-body {
-  margin: 0 auto;
-  background: #f0f0f0;
-}
 
 /* line 103, ../../private/scss/style.scss */
 #app-box {
