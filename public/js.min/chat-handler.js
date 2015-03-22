@@ -51,7 +51,6 @@
 	});
 	//get user list
 	socket.on("user list", function(list){
-		console.log(list);
 		listArray = list.split(/[,.]/gi);
 		listArray.pop();
 		userList = list;
@@ -93,7 +92,6 @@
 		var matchedUser = new RegExp("\\b(" + subStr + ")", "gi");
 		$("#listBox").html("");
 		listArray.map(function(elem, index){
-			console.log("|" + elem + "|")
 			if (elem.match(matchedUser) && $("#listBox").attr("style") === "display: inline-block;") {
 				var match = elem.replace(matchedUser, "<span class='match-box-str'>"+subStr+"</span>");
 				$("#listBox").append("<li class='matched-user' data-index='" + (index+1) + "' data-name='" + elem + "'>" + match + "</li>");
@@ -188,7 +186,6 @@
 		if(filter.match(regUser) && person.toLowerCase() !== userName.toLowerCase() ){
 			var ment = filter.indexOf("@");
 			var sub = filter.substring(ment-20,ment+20);
-			//console.log(filter.slice(ment-30) );
 			if(filter.slice(ment-20).length > sub.length){
 				$("body").append("<div class='notification'>"+person+" Mentioned You: "+sub+"...</div>");
 			} else {
