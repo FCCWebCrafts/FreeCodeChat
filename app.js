@@ -142,7 +142,7 @@ io.on("connection", function(socket){
 				return false;
 			} else
 			//check if list command
-			if(msg.match(/^([\/]list)/i)){
+			if(msg.match(/^([\/]list\b)/i)){
 				var cmdUserList = [];
 				index = 1;
 				for(var vals in users){
@@ -161,9 +161,9 @@ io.on("connection", function(socket){
 					cmdUserList.push(users[vals].name);
 				}
 				cmdUserList = cmdUserList.join(", ") + ".";
-				io.to(socket.id).emit("command", "Users: " + cmdUserList);
+				io.to(socket.id).emit("command", "Global Users: " + cmdUserList);
 			} else //check if users commands
-			if(msg.match(/^([\/]users)/i)){
+			if(msg.match(/^([\/]users\b)/i)){
 				var cmdMsg = "";
 				var count = 0;
 				for(var vals in users){
@@ -186,10 +186,10 @@ io.on("connection", function(socket){
 					count++;
 				}
 				if(count > 1){
-					cmdMsg = "There are " + count + " concurrent users.";
+					cmdMsg = "There are " + count + " concurrent global users.";
 				}
 					else{
-					cmdMsg = "There is " + count + " concurrent user.";
+					cmdMsg = "There is " + count + " concurrent global user.";
 				}
 				io.to(socket.id).emit("command", cmdMsg);
 			} else //default chat message
