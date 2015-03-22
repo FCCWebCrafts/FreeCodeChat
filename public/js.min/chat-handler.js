@@ -93,6 +93,7 @@
 		var matchedUser = new RegExp("\\b(" + subStr + ")", "gi");
 		$("#listBox").html("");
 		listArray.map(function(elem, index){
+			console.log("|" + elem + "|")
 			if (elem.match(matchedUser) && $("#listBox").attr("style") === "display: inline-block;") {
 				var match = elem.replace(matchedUser, "<span class='match-box-str'>"+subStr+"</span>");
 				$("#listBox").append("<li class='matched-user' data-index='" + (index+1) + "' data-name='" + elem + "'>" + match + "</li>");

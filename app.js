@@ -92,7 +92,7 @@ io.on("connection", function(socket){
 			for(var log in history){
 				if(history[log].userName.room === userRoom) {
 					console.log(history[log].userName);
-					io.to(socket.id).emit("chat log", history[log].time, history[log].userName, history[log].message);
+					io.to(socket.id).emit("chat log", history[log].time, history[log].userName.name, history[log].message);
 				}
 			}
 			var toSub = [];
@@ -101,7 +101,7 @@ io.on("connection", function(socket){
 					toSub.push(users[vals].name);
 				}
 			}
-			toSub = toSub.join(", ") + ".";
+			toSub = toSub.join(",") + ".";
 			io.in(room).emit("user list", toSub);	
 
 			userCount = Object.keys(users).length;
