@@ -58,7 +58,7 @@ io.on("connection", function(socket){
 	socket.on("validate", function(name){
 		console.log("running validation...");
 		for(var key in users){
-			if(users[key] === name){
+			if(users[key].name === name){
 				io.to(socket.id).emit("used");
 				//console.log(name);
 				//console.log("taken");
