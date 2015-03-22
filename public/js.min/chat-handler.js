@@ -24,13 +24,14 @@
 	}
 	//get relative of chat log for new users
 	function logDate(time){
+		var period;
 		var now = new Date(time);
 		var hours = now.getHours();
 		var minutes = now.getMinutes();
-		if(hours > 12){ hours -= 12;}
-		if(hours === 0){ hours = 12;}
-		if(minutes < 9){ minutes = "0" + minutes;}
-		return hours + ":" + minutes;
+		if(hours > 12){ hours -= 12; period = "pm"}
+		if(hours === 0){ hours = 12; period = "am"}
+		if(minutes < 10){ minutes = "0" + minutes;}
+		return hours + ":" + minutes + " " + period;
 	}
 	function scrollToBottom() {
 		$("#messages")[0].scrollTop = $("#messages")[0].scrollHeight;
