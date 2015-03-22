@@ -97,8 +97,8 @@ body {
 /*chat styling*/
 /* line 95, ../../private/scss/style.scss */
 * {
-	transition: all .2s ease-in-out ;
-	-webkit-transition: all .2s ease-in-out ;
+	transition: all .0s ease-in-out ;
+	-webkit-transition: all .0s ease-in-out ;
   box-sizing: border-box;
   font-family: 'Open Sans', sans-serif;
 }
