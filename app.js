@@ -167,9 +167,19 @@ io.on("connection", function(socket){
 					cmdMsg = "There is " + count + " concurrent global user.";
 				}
 				io.to(socket.id).emit("command", cmdMsg);
+			} else //check if usersall commands
+			if(msg.match(/^([\/]room)\b/i)){
+				io.to(socket.id).emit("command", "/" + userRoom.split("/").pop() + "." );
+			} else //check if usersall commands
+			if(msg.match(/^([\/]roomall)/i)){
+				var roomStr = [];
+				rooms.map(function(elem) {
+					roomStr.push("<a href='" + elem + "'>" + elem.split("/").pop() + "</a>");
+				});
+				io.to(socket.id).emit("command", "/" + roomStr.join(", ") + "." );
 			} else //default chat message
 			{
-				io.in(room).emit("chat message", "" + users[socket.id].name, msg);
+				io.in(room).emit("chat message", users[socket.id].name, msg);
 				history.push(
 						{
 							"userName": users[socket.id],
