@@ -7,15 +7,17 @@
 	//set user name
 	function setUserName(){
 		userName = prompt("What's your name? Must be between 3-12 characters long.");
-		if(userName.length <3 ||
-			userName.length >14 ||
-			userName.match(/[\[\]\`\~\|\<\>\s,\?\*\&\^%\$#@!\(\)\\\/\{\}=+\;\:\"\']/ig) ||
-			userName.match(/[\-\_\.]/ig) &&
-			userName.match(/[\-\_\.]/ig).length > 1 ){
-			alert("User name cannot contain special characters.\n\n Exceptions: - _ . \n\n Limited to 1 use of one of these.");
-			setUserName();
-		} else {
-			socket.emit("validate", userName);
+		if(userName) {
+			if(userName.length <3 ||
+				userName.length >14 ||
+				userName.match(/[\[\]\`\~\|\<\>\s,\?\*\&\^%\$#@!\(\)\\\/\{\}=+\;\:\"\']/ig) ||
+				userName.match(/[\-\_\.]/ig) &&
+				userName.match(/[\-\_\.]/ig).length > 1 ){
+				alert("User name cannot contain special characters.\n\n Exceptions: - _ . \n\n Limited to 1 use of one of these.");
+				setUserName();
+			} else {
+				socket.emit("validate", userName);
+			}
 		}
 	}
 	//get time for current users
@@ -92,12 +94,14 @@
 		subStr = $(this).val().split("").slice(caretPosition+1).join("");
 		var matchedUser = new RegExp("\\b(" + subStr + ")", "gi");
 		$("#listBox").html("");
-		listArray.map(function(elem, index){
-			if (elem.match(matchedUser) && $("#listBox").attr("style") === "display: inline-block;") {
-				var match = elem.replace(matchedUser, "<span class='match-box-str'>"+subStr+"</span>");
-				$("#listBox").append("<li class='matched-user' data-index='" + (index+1) + "' data-name='" + elem + "'>" + match + "</li>");
-			}
-		});
+		if(listArray) {
+			listArray.map(function(elem, index){
+				if (elem.match(matchedUser) && $("#listBox").attr("style") === "display: inline-block;") {
+					var match = elem.replace(matchedUser, "<span class='match-box-str'>"+subStr+"</span>");
+					$("#listBox").append("<li class='matched-user' data-index='" + (index+1) + "' data-name='" + elem + "'>" + match + "</li>");
+				}
+			});
+		}
 		$("#listBox li:nth-child(" + selection + ")").addClass("selected");
 	});
 	//check for keydown events

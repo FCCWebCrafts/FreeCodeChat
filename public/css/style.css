@@ -295,3 +295,6 @@ input[type="submit"] {
   background: rgba(50, 50, 50, .8);
   color: white;
 }
+.fail-message{
+  color: red;
+}
