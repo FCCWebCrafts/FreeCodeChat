@@ -1,17 +1,23 @@
 //requirements
-var express = require("express")
-, app		= express()
-, http		= require("http").Server(app)
-, io 		= require('socket.io')(http)
-, path		= require("path")
-, cons 		= require("consolidate")
-, port		= process.env['PORT'] || 3007;
+var express 		= require("express")
+, app						= express()
+, http					= require("http").Server(app)
+, io 						= require('socket.io')(http)
+, path					= require("path")
+, cons 					= require("consolidate")
+, MongoClient		= require("mongodb")
+, port					= process.env['PORT'] || 3007;
+//mongodb variables
+var Server = MongoClient.Server;
+var Db = MongoClient.Db;
+var db = new Db("fcchat", new Server("localhost", 27017));
 
 app.use(express.static(path.join(__dirname, 'public')));
+app.locals.db = db;
+
 app.engine("html", cons.swig);
 app.set("view engine", "html");
 app.set("views", __dirname + "/views");
-
 var webPages = "/views/";
 
 //variables
@@ -27,7 +33,7 @@ var purgeRooms = require("./purge-rooms"),
 purge = purgeRooms(users, rooms);
 //require route functions
 var route = require("./routes"),
-routeTo = route(__dirname, webPages, users);
+routeTo = route(__dirname, webPages, users, db);
 
 //socket
 //chat server connection
@@ -81,7 +87,7 @@ io.on("connection", function(socket){
 				}
 			}
 			toSub = toSub.join(",") + ".";
-			io.in(room).emit("user list", toSub);	
+			io.in(room).emit("user list", toSub);
 
 			userCount = Object.keys(users).length;
 			console.log(name + " connected");
@@ -217,6 +223,7 @@ app.get("/goTo", routeTo.goTo);
 app.get("/:name", routeTo.chatPage);
 app.get("*", routeTo.notFound);
 
-http.listen(port);
-
-console.log("server running at localhost:" + port + "");
+db.open(function(err, db) {
+	http.listen(port);
+	console.log("server running at localhost:" + port + "");
+});

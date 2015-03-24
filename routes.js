@@ -1,4 +1,5 @@
-module.exports = function(dir, pages, users) {
+module.exports = function(dir, pages, users, mongo) {
+var url = "mongodb://localhost:27017/fcchat";
 
 	return {
 		landingPage: function(req, res) {
@@ -14,9 +15,16 @@ module.exports = function(dir, pages, users) {
 					rooms.push(users[key].room);
 				}
 			}
-			console.log(rooms);
-			res.setHeader("Content-Type", "text/html");
-			res.render("index.html", {"fail": "", "rooms": rooms });
+			mongo.collection("urls").find({}, {"_id": 0, "urls": /9$/},{}).toArray(function(err, doc) {
+				if (err) throw err;
+				var arr = [];
+				doc.map(function(elem) {
+					arr.push(elem.urls);
+				});
+				console.log( arr );
+				res.setHeader("Content-Type", "text/html");
+				res.render("index.html", {"fail": "", "rooms": arr });
+			});
 		},
 		howTo: function(req, res) {
 			res.setHeader("Content-Type", "text/html");
