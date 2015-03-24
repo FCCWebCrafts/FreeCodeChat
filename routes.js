@@ -23,7 +23,7 @@ var url = "mongodb://localhost:27017/fcchat";
 				});
 				console.log( arr );
 				res.setHeader("Content-Type", "text/html");
-				res.render("index.html", {"fail": "", "rooms": arr });
+				res.render("index.html", {"fail": "", "rooms": rooms });
 			});
 		},
 		howTo: function(req, res) {
