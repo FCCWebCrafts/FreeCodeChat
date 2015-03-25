@@ -5,16 +5,22 @@ var express 		= require("express")
 , io 						= require('socket.io')(http)
 , path					= require("path")
 , cons 					= require("consolidate")
+, cookieParser	= require("cookie-parser")
+, bodyParser		= require("body-parser")
+, session				= require("cookie-session")
 , MongoClient		= require("mongodb")
 , port					= process.env['PORT'] || 3007;
-//mongodb variables
-var Server = MongoClient.Server;
-var Db = MongoClient.Db;
-var db = new Db("fcchat", new Server("localhost", 27017));
 
+//require login
+//var passport = require("./login-data");
+//configuration
 app.use(express.static(path.join(__dirname, 'public')));
-app.locals.db = db;
-
+app.use(cookieParser());
+app.use(bodyParser.urlencoded({extended: false}));
+app.use(bodyParser.json());
+app.use(session({ keys: ["key1", "key2","key3"] }));
+//app.use(passport.initialize());
+//app.use(passport.session());
 app.engine("html", cons.swig);
 app.set("view engine", "html");
 app.set("views", __dirname + "/views");
@@ -22,10 +28,14 @@ var webPages = "/views/";
 
 //variables
 var users = {};
+var userSessions = {};
 var rooms = [];
 var userCount = 0;
 var history = [];
 var historyLimit = 300;
+var Server = MongoClient.Server;
+var Db = MongoClient.Db;
+var db = new Db("fcchat", new Server("localhost", 27017));
 
 //require custom modules
 //require room purge function
@@ -33,7 +43,7 @@ var purgeRooms = require("./purge-rooms"),
 purge = purgeRooms(users, rooms);
 //require route functions
 var route = require("./routes"),
-routeTo = route(__dirname, webPages, users, db);
+routeTo = route(__dirname, webPages, users, db, userSessions);
 
 //socket
 //chat server connection
@@ -218,6 +228,9 @@ io.emit("some event", {for: "everyone"});
 
 //routes
 app.get("/", routeTo.landingPage);
+app.get("/signIn", routeTo.signIn);
+app.get("/test", routeTo.test);
+app.post("/login", userSessions = routeTo.auth);
 app.get("/howTo", routeTo.howTo);
 app.get("/goTo", routeTo.goTo);
 app.get("/:name", routeTo.chatPage);

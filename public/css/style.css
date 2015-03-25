@@ -298,3 +298,6 @@ input[type="submit"] {
 .fail-message{
   color: red;
 }
+.clickable{
+  cursor: pointer;
+}

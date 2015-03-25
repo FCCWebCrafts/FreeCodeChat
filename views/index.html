@@ -8,11 +8,14 @@
 		<div id="box">
 			<h1>Welcome To</h1>
 			<span class="big-title">Free Code Chat</span>
-			<a class="button" href="/howTo">See Info</a>
+			<a class="button clickable" href="/howTo">See Info</a>
+			{% if signedIn = true %}
+				<a class="button clickable" href="/signin">Sign In</a>
+			{% endif %}
 			<form method="get" action="/goTo">
 				<label for="room">Enter A Room Name: </label>
 				<input type="text" name="room" placeholder="Type room name..."><br>
-				<input type="submit" value="Submit">
+				<input class="clickable" type="submit" value="Submit">
 			</form>
 			<span class="fail-message">{{fail}}</span><br>
 			<span class="fine">(No special characters allowed, only a hyphen)</span>
