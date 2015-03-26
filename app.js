@@ -5,10 +5,12 @@ var express 		= require("express")
 , io 						= require('socket.io')(http)
 , path					= require("path")
 , cons 					= require("consolidate")
+, swig					= require("swig")
 , cookieParser	= require("cookie-parser")
 , bodyParser		= require("body-parser")
 , session				= require("cookie-session")
 , MongoClient		= require("mongodb")
+//, MongoConnect	= require("connect-mongodb")
 , port					= process.env['PORT'] || 3007;
 
 //require login
@@ -18,9 +20,17 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
-app.use(session({ keys: ["key1", "key2","key3"] }));
-//app.use(passport.initialize());
-//app.use(passport.session());
+app.use(session({
+	keys: ["key1", "key2","key3"],
+	secret: "secret",
+	cookie: {maxAge: 60 * 60 * 1000}
+}));
+var allowCrossDomain = function(req, res, next) {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET,POST');
+    next();
+}
+app.use(allowCrossDomain);
 app.engine("html", cons.swig);
 app.set("view engine", "html");
 app.set("views", __dirname + "/views");
@@ -43,29 +53,27 @@ var purgeRooms = require("./purge-rooms"),
 purge = purgeRooms(users, rooms);
 //require route functions
 var route = require("./routes"),
-routeTo = route(__dirname, webPages, users, db, userSessions);
+routeTo = route(__dirname, webPages, db);
 
 //socket
 //chat server connection
 io.on("connection", function(socket){
 	var room = socket.handshake.headers.referer;
 
-	socket.on("validate", function(name){
+	socket.on("validate", function(sessSet){
 		console.log("running validation...");
-		for(var key in users){
-			if(users[key].name === name){
-				io.to(socket.id).emit("used");
-				//console.log(name);
-				//console.log("taken");
-				name = "";
+		mongo.collection("sessions").findOne({"_id": sessSet}, function(err, doc) {
+
+			if(!doc){
+				io.to(socket.id).emit("signin");
 				return false;
 			}
-		}
-		io.to(socket.id).emit("open");
+		});
+		io.to(socket.id).emit("validated", doc["username"]);
 		//console.log(name);
 		//console.log("open");
 	});
-	socket.on("join", function(name, userRoom){
+	socket.on("join", function(sessSet, userRoom){
 		if(typeof name === "function" ||
 			typeof name === "object" ){
 			io.to(socket.id).emit("illegal", "Illegal operation.")
@@ -228,12 +236,12 @@ io.emit("some event", {for: "everyone"});
 
 //routes
 app.get("/", routeTo.landingPage);
-app.get("/signIn", routeTo.signIn);
+app.get("/login", routeTo.signIn);
 app.get("/test", routeTo.test);
 app.post("/login", userSessions = routeTo.auth);
 app.get("/howTo", routeTo.howTo);
 app.get("/goTo", routeTo.goTo);
-app.get("/:name", routeTo.chatPage);
+app.get("/room/:name", routeTo.chatPage);
 app.get("*", routeTo.notFound);
 
 db.open(function(err, db) {

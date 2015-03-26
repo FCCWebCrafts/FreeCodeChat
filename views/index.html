@@ -9,9 +9,8 @@
 			<h1>Welcome To</h1>
 			<span class="big-title">Free Code Chat</span>
 			<a class="button clickable" href="/howTo">See Info</a>
-			{% if signedIn = true %}
-				<a class="button clickable" href="/signin">Sign In</a>
-			{% endif %}
+			
+			<a class="button clickable" href="/{{sign}}">{{ signText }}</a>
 			<form method="get" action="/goTo">
 				<label for="room">Enter A Room Name: </label>
 				<input type="text" name="room" placeholder="Type room name..."><br>
@@ -25,5 +24,10 @@
 			{% endfor %}
 		</div>
 		{{ stuff }}
+		<script type="text/javascript">
+			var p = document.getElementById("box");
+			var c = document.querySelector(".disabled");
+			p.removeChild(c);
+		</script>
 	</body>
 </html>

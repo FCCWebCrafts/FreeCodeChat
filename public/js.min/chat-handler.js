@@ -5,6 +5,7 @@
 	var regUser;
 	var room = window.location.href.match(/(http(s)?[:\/\/]*)([a-z0-9\-]*)([.:][a-z0-9\-]*)([.][a-z]{2,3})?([\/a-z0-9?=%_\-&#]*)?/ig)[0];
 	//set user name
+	/* good setup for validting user name for sign up - saving for later
 	function setUserName(){
 		userName = prompt("What's your name? Must be between 3-12 characters long.");
 		if(userName) {
@@ -20,6 +21,23 @@
 			}
 		}
 	}
+	*/
+	//validate user session
+	var sessCookie = document.cookie.split("=").pop();
+
+	socket.emit("validate", sessCookie );
+
+	socket.on("signin", function(){
+		alert("Please sign in");
+		window.location.replace("/signin");
+	});
+
+	socket.on("validated", function(name){
+		userName = name;
+		socket.emit("join", sessCookie, room);
+		regUser = new RegExp("[@](" + userName + ")\\b", "gi");
+	});
+
 	//get time for current users
 	function getTimeNow() {
 		return moment().format('h:mm a');
@@ -38,16 +56,6 @@
 	function scrollToBottom() {
 		$("#messages")[0].scrollTop = $("#messages")[0].scrollHeight;
 	}
-
-	socket.on("used", function(){
-		alert("Sorry, that user name is unavailable.");
-		setUserName();
-	});
-
-	socket.on("open", function(){
-		socket.emit("join", userName, room);
-		regUser = new RegExp("[@](" + userName + ")\\b", "gi");
-	});
 
 	socket.on("illegal", function(res){
 		alert(res);
