@@ -10,7 +10,6 @@ var express 		= require("express")
 , bodyParser		= require("body-parser")
 , session				= require("cookie-session")
 , MongoClient		= require("mongodb")
-//, MongoConnect	= require("connect-mongodb")
 , port					= process.env['PORT'] || 3007;
 
 //require login
@@ -275,5 +274,5 @@ app.post("/signup", routeTo.insert);
 
 db.open(function(err, db) {
 	http.listen(port);
-	console.log("server running at localhost:" + port + "");
+	console.log("server running at port:" + port + "");
 });

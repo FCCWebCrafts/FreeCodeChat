@@ -1,11 +1,11 @@
+var bcrypt = require("bcrypt-nodejs");
+
 module.exports = function(dir, pages, mongo) {
-
-
 	return {
 		landingPage: function(req, res) {
 			var rooms = [];
 			mongo.collection("sessions").find({}).toArray( function(err, doc) {
-				console.log(doc);
+				//console.log(doc);
 				//
 				if(doc) {
 					doc.map(function(elem) {
@@ -21,13 +21,13 @@ module.exports = function(dir, pages, mongo) {
 					});					
 				}				
 			});
-			console.log("from req: " + req.cookies["express:sess"]);
+			//console.log("from req: " + req.cookies["express:sess"]);
 			var sessSet = req.cookies["express:sess"],
 			sign = "login",
 			signText = "Sign In",
 			signUp = "",
 			user = "";
-			console.log("from sessSet: " + sessSet);
+			//console.log("from sessSet: " + sessSet);
 			mongo.collection("sessions").findOne({"_id": sessSet}, function(err, doc) {
 				if (err) throw err;
 
@@ -78,8 +78,11 @@ module.exports = function(dir, pages, mongo) {
 					mongo.collection("users").findOne({"username": userReq.toLowerCase()}, function(err, doc) {
 						if (err) throw err;
 						if(!doc) {
-							mongo.collection("users").insert({"username": userReq, "password": passReq });
-							res.redirect("/");
+							bcrypt.hash(passReq, null, null, function(err, hash) {
+								if(err) throw err;
+								mongo.collection("users").insert({"username": userReq, "password": hash });
+								res.redirect("/");
+							});
 						} else {
 							res.render("signup", {"errMsg": "That username has been taken."});
 						}
@@ -93,16 +96,21 @@ module.exports = function(dir, pages, mongo) {
 			var userReq = req.body.username;
 			var passReq = req.body.password;
 			var sessSet = req.cookies["express:sess"];
-
-			mongo.collection("users").findOne({"username": userReq.toLowerCase(), "password": passReq}, function(err, doc) {
+			mongo.collection("users").findOne({"username": userReq.toLowerCase()}, function(err, doc) {
 				if (err) throw err;
-				//console.log(doc);
 				if(doc && sessSet) {
-					mongo.collection("sessions").insert({"_id": sessSet, "username": userReq, "room": null });
-					res.cookie("session-key", sessSet);
-					res.redirect("/");
+					bcrypt.compare(passReq, doc.password, function(err, resp) {
+					  // res === true
+					  if(resp) {
+							mongo.collection("sessions").insert({"_id": sessSet, "username": userReq, "room": null });
+							res.cookie("session-key", sessSet);
+							res.redirect("/");
+					  } else {
+							res.render("signin", {"errMsg": "Incorrect password."});  	
+					  }
+					});
 				} else {
-					res.render("signin", {"errMsg": "Invalid username or password."});
+					res.render("signin", {"errMsg": "Username not found."});
 				}
 			});
 		},
