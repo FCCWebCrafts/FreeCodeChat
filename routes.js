@@ -126,7 +126,6 @@ module.exports = function(dir, pages, mongo) {
 					//console.log(req.route.path);
 					//console.log(req.headers.host);
 				if(doc) {
-					console.log(req);
 					res.setHeader("Content-Type", "text/html");
 					res.render("chat", {"username": doc.username, "room": req.params.name.split("/").pop() });
 				} else {

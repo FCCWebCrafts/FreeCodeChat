@@ -101,6 +101,7 @@
 		if (k.keyCode === 13){
 			if ( $("#listBox").attr("style") === "display: inline-block;" ) {
 				selectMention();
+				return false;
 			}
 		}
 		//check for up key

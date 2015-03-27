@@ -103,12 +103,13 @@ io.on("connection", function(socket){
 					io.to(socket.id).emit("chat log", history[log].time, history[log].userName.name, history[log].message);
 				}
 			}
+			db.collection("sessions").save({"_id": sessCookie, "username": name, "room": userRoom});
 			db.collection("sessions").find({}).toArray(function(err, doc) {
 				if (err) throw err;
 				var toSub = [];
 				doc.map(function(elem, index){
 					if(elem.room === userRoom) {
-						toSub.push(elem.name);
+						toSub.push(elem.username);
 					}
 				});
 				toSub = toSub.join(",") + ".";
@@ -126,7 +127,6 @@ io.on("connection", function(socket){
 					if(!used){rooms.push(doc[id].room);}
 				}
 			});
-			db.collection("sessions").save({"_id": sessCookie, "username": name, "room": userRoom});
 		}
 	});//end on join
 	//on chat msg
