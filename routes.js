@@ -25,7 +25,8 @@ module.exports = function(dir, pages, mongo) {
 			var sessSet = req.cookies["express:sess"],
 			sign = "login",
 			signText = "Sign In",
-			signUp = "";
+			signUp = "",
+			user = "";
 			console.log("from sessSet: " + sessSet);
 			mongo.collection("sessions").findOne({"_id": sessSet}, function(err, doc) {
 				if (err) throw err;
@@ -34,9 +35,10 @@ module.exports = function(dir, pages, mongo) {
 					sign = "signout";
 					signText = "Sign Out";
 					signUp = "disabled";
+					user = ", " + doc.username + ",";
 				}
 				res.setHeader("Content-Type", "text/html");
-				res.render("index", {"fail": "", "rooms": rooms, "sign": sign, "signText": signText, "signup": signUp });
+				res.render("index", {"fail": "", "rooms": rooms, "sign": sign, "signText": signText, "signup": signUp, "user": user });
 			});
 		},
 		test: function(req, res) {

@@ -3,6 +3,9 @@
 	userName,
 	userList, listArray,
 	regUser,
+	windowFocus = true,
+	unread = 0,
+	originalTitle = $("title").html();
 	room = window.location.href.match(/(http(s)?[:\/\/]*)([a-z0-9\-]*)([.:][a-z0-9\-]*)([.][a-z]{2,3})?([\/a-z0-9?=%_\-&#]*)?/ig)[0];
 	//set user name
 	//validate user session
@@ -19,19 +22,32 @@
 		socket.emit("join", userName, room);
 		regUser = new RegExp("[@](" + userName + ")\\b", "gi");
 	});
-
+	$(window).focus(function() {
+		windowFocus = true;
+		unread = 0;
+		$("title").html(originalTitle);
+	}).blur(function() {
+		windowFocus = false;
+	});
+	/*
+	setInterval( function() {
+		console.log("Window in focus = " + windowFocus);
+		var title = $("title").html();
+		console.log( title );
+	}, 1000);
+*/
 	//get time for current users
 	function getTimeNow() {
 		return moment().format('h:mm a');
 	}
 	//get relative of chat log for new users
 	function logDate(time){
-		var period;
+		var period = "am";
 		var now = new Date(time);
 		var hours = now.getHours();
 		var minutes = now.getMinutes();
 		if(hours > 12){ hours -= 12; period = "pm"}
-		if(hours === 0){ hours = 12; period = "am"}
+		if(hours === 0){ hours = 12;}
 		if(minutes < 10){ minutes = "0" + minutes;}
 		return hours + ":" + minutes + " " + period;
 	}
@@ -71,15 +87,11 @@
 		if ( $(this).val().charAt( getCaretPos(this) - 1).match(/[@]/gi) ){
 			//show list box
 			$("#listBox").css({"display": "inline-block"});
-			//disable submit so selection of user in list box can be made
-			$("#chat-box input[type='submit']").prop("disabled", true);
 			caretPosition = getCaretPos(this) - 1;
 		}
-		if ( $(this).val().charAt( getCaretPos(this) - 1).match(/[\s]/gi) ){
+		if ( $(this).val().charAt( getCaretPos(this) - 1).match(/[\s]/gi) || $(this).val().charAt( getCaretPos(this) - 1) === "" ){
 			//hide list box
 			$("#listBox").css({"display": "none"});
-			//re-enable submit button
-			$("#chat-box input[type='submit']").prop("disabled", false);
 		}
 		subStr = $(this).val().split("").slice(caretPosition+1).join("");
 		var matchedUser = new RegExp("\\b(" + subStr + ")", "gi");
@@ -133,8 +145,6 @@
 	//mouse press on user mention
 
 	function selectMention(){
-		//re-enable the submit button
-		$("#chat-box input[type='submit']").prop("disabled", false);
 		//attach the full user names to the input value
 		$("#msg").val( $("#msg").val() + $("#listBox li:nth-child(" + selection +
 		 ")").data("name").split("").slice(subStr.length).join("") );
@@ -147,11 +157,21 @@
 	socket.on("chat log", function(time, who, msg){
 		$("#messages").append($("<li class='chat'>").html("[<span class='log'>" + logDate(time) + "</span>] <span class='user'> " + who + "</span>: " + regexFilter(msg, who) ) );
 		$("#messages")[0].scrollTop = $("#messages")[0].scrollHeight;
-
+		if(!windowFocus) {
+			$("title").text("(" + unread + ") " + originalTitle);
+			unread++;
+		}
 	});
 	//socket response on chat message
 	socket.on("chat message", function(who, msg){
 		$("#messages").append($("<li class='chat'>").html("[" + getTimeNow() + "] <span class='user'> " + who + "</span>: " + regexFilter(msg, who) ) );
+		//var title = originalTitle;
+		if(windowFocus) {
+			$("title").html(originalTitle);
+		} else {
+			unread++;
+			$("title").text("(" + unread + ") " + originalTitle);
+		}
 		scrollToBottom();
 	});
 	//socket response on update

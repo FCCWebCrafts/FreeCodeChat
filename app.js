@@ -99,8 +99,8 @@ io.on("connection", function(socket){
 			socket.join(room);
 			io.in(room).emit("update", name + " has connected to the server!");
 			for(var log in history){
-				if(history[log].userName.room === userRoom) {
-					io.to(socket.id).emit("chat log", history[log].time, history[log].userName.name, history[log].message);
+				if(history[log].room === userRoom) {
+					io.to(socket.id).emit("chat log", history[log].time, history[log].username, history[log].message);
 				}
 			}
 			db.collection("sessions").save({"_id": sessCookie, "username": name, "room": userRoom});
@@ -226,9 +226,10 @@ io.on("connection", function(socket){
 			io.in(room).emit("chat message", name, msg);
 			history.push(
 					{
-						"userName": name,
+						"username": name,
 						"message": msg,
-						"time": new Date().getTime()
+						"time": new Date().getTime(),
+						"room": room
 					}
 				);
 			if(history.length > historyLimit){
