@@ -37,20 +37,21 @@ app.set("views", __dirname + "/views");
 var webPages = "/views/";
 
 //variables
-var users = {};
-var userSessions = {};
 var rooms = [];
-var userCount = 0;
-var history = [];
-var historyLimit = 300;
-var Server = MongoClient.Server;
-var Db = MongoClient.Db;
-var db = new Db("fcchat", new Server("localhost", 27017));
+userSessions = {},
+userCount = 0,
+history = [],
+historyLimit = 300,
+Server = MongoClient.Server,
+Db = MongoClient.Db,
+db = new Db("fcchat", new Server("localhost", 27017));
 
 //require custom modules
+//
 //require room purge function
 var purgeRooms = require("./purge-rooms"),
-purge = purgeRooms(users, rooms);
+purge = purgeRooms(db, rooms);
+//
 //require route functions
 var route = require("./routes"),
 routeTo = route(__dirname, webPages, db);
@@ -59,21 +60,23 @@ routeTo = route(__dirname, webPages, db);
 //chat server connection
 io.on("connection", function(socket){
 	var room = socket.handshake.headers.referer;
-
+	var sessCookie;
 	socket.on("validate", function(sessSet){
 		console.log("running validation...");
-		mongo.collection("sessions").findOne({"_id": sessSet}, function(err, doc) {
-
+		db.collection("sessions").findOne({"_id": sessSet}, function(err, doc) {
+			//console.log( doc)
 			if(!doc){
 				io.to(socket.id).emit("signin");
-				return false;
+			} else {
+				io.to(socket.id).emit("validated", doc["username"]);
+				sessCookie = sessSet;
+				console.log("cookie: " + sessCookie);
 			}
 		});
-		io.to(socket.id).emit("validated", doc["username"]);
 		//console.log(name);
 		//console.log("open");
 	});
-	socket.on("join", function(sessSet, userRoom){
+	socket.on("join", function(name, userRoom){
 		if(typeof name === "function" ||
 			typeof name === "object" ){
 			io.to(socket.id).emit("illegal", "Illegal operation.")
@@ -90,86 +93,97 @@ io.on("connection", function(socket){
 			return false;
 		} else
 		{
-			users[socket.id] = {"name": name, "room": room};
+			var temp = db.collection("sessions").find({"username": name});
+			temp.room = userRoom;
+			db.collection("sessions").save(temp);
 			socket.join(room);
-			io.in(room).emit("update", users[socket.id].name + " has connected to the server!");
+			io.in(room).emit("update", name + " has connected to the server!");
 			for(var log in history){
 				if(history[log].userName.room === userRoom) {
 					io.to(socket.id).emit("chat log", history[log].time, history[log].userName.name, history[log].message);
 				}
 			}
-			var toSub = [];
-			for(var vals in users){
-				if(users[vals].room === userRoom) {
-					toSub.push(users[vals].name);
+			db.collection("sessions").find({}).toArray(function(err, doc) {
+				if (err) throw err;
+				var toSub = [];
+				doc.map(function(elem, index){
+					if(elem.room === userRoom) {
+						toSub.push(elem.name);
+					}
+				});
+				toSub = toSub.join(",") + ".";
+				io.in(room).emit("user list", toSub);
+
+				userCount++;
+				console.log(name + " connected");
+				console.log("Users: " + userCount);
+
+				for(var id in doc){
+					var used = false;
+					for(i = 0; i < rooms.length; i++){
+						if(doc[id].room === rooms[i]){used = true;}
+					};
+					if(!used){rooms.push(doc[id].room);}
 				}
-			}
-			toSub = toSub.join(",") + ".";
-			io.in(room).emit("user list", toSub);
-
-			userCount = Object.keys(users).length;
-			console.log(name + " connected");
-			console.log("Users: " + userCount);
-
-			for(var id in users){
-				var used = false;
-				for(i = 0; i < rooms.length; i++){
-					if(users[id].room === rooms[i]){used = true;}
-				};
-				if(!used){rooms.push(users[id].room);}
-			}
+			});
+			db.collection("sessions").save({"_id": sessCookie, "username": name, "room": userRoom});
 		}
 	});//end on join
 	//on chat msg
-	socket.on("chat message", function(msg, userRoom){
-		//validate user
-		if(!users[socket.id] ){
+	socket.on("chat message", function(msg, userRoom, name){
+	//check script tags
+		console.log(typeof msg === "function");
+		if(typeof msg === "function" ||
+			typeof msg === "object" ){
+			//console.log("Snagged scripter.");
+			io.to(socket.id).emit("illegal", "Illegal Operation.");
+			return false;
+		}
+		msg = msg.replace(/[<]/ig, "&lt;");
+		msg = msg.replace(/[>]/ig, "&gt;");
+		//check empty string
+		if(msg === ""){
 			return false;
 		} else
-		{//check script tags
-			console.log(typeof msg === "function");
-			if(typeof msg === "function" ||
-				typeof msg === "object" ){
-				//console.log("Snagged scripter.");
-				io.to(socket.id).emit("illegal", "Illegal Operation.");
-				return false;
-			}
-			msg = msg.replace(/[<]/ig, "&lt;");
-			msg = msg.replace(/[>]/ig, "&gt;");
-			//check empty string
-			if(msg === ""){
-				return false;
-			} else
-			//check if list command
-			if(msg.match(/^([\/]list\b)/i)){
-				var cmdUserList = [];
-				index = 1;
-				for(var vals in users){
-					if(users[vals].room === userRoom) {
-						cmdUserList.push(users[vals].name);
+		//check if list command
+		if(msg.match(/^([\/]list\b)/i)){
+			var cmdUserList = [];
+			index = 1;
+			db.collection("sessions").find({}).toArray(function(err, doc) {
+				if (err) throw err;
+				doc.map(function(elem, index){
+					console.log(elem.room);
+					if(elem.room === userRoom) {
+						cmdUserList.push(elem["username"]);
 					}
-				}
+				});
 				cmdUserList = cmdUserList.join(", ") + ".";
 				io.to(socket.id).emit("command", "Users: " + cmdUserList);
-			} else
-			//check if listall command
-			if(msg.match(/^([\/]listall)/i)){
-				var cmdUserList = [];
-				index = 1;
-				for(var vals in users){
-					cmdUserList.push(users[vals].name);
-				}
+			});	
+		} else
+		//check if listall command
+		if(msg.match(/^([\/]listall)/i)){
+			var cmdUserList = [];
+			index = 1;
+			db.collection("sessions").find({}).toArray(function(err, doc) {
+				if (err) throw err;
+				doc.map(function(elem, index){
+					cmdUserList.push(elem["username"]);
+				});
 				cmdUserList = cmdUserList.join(", ") + ".";
 				io.to(socket.id).emit("command", "Global Users: " + cmdUserList);
-			} else //check if users commands
-			if(msg.match(/^([\/]users\b)/i)){
-				var cmdMsg = "";
-				var count = 0;
-				for(var vals in users){
-					if(users[vals].room === userRoom) {
+			});	
+		} else //check if users commands
+		if(msg.match(/^([\/]users\b)/i)){
+			var cmdMsg = "";
+			var count = 0;
+			db.collection("sessions").find({}).toArray(function(err, doc) {
+				doc.map(function(elem, index){
+					console.log(elem.room === userRoom);
+					if(elem.room === userRoom) {
 						count++;
 					}
-				}
+				});
 				if(count > 1){
 					cmdMsg = "There are " + count + " concurrent users.";
 				}
@@ -177,13 +191,15 @@ io.on("connection", function(socket){
 					cmdMsg = "There is " + count + " concurrent user.";
 				}
 				io.to(socket.id).emit("command", cmdMsg);
-			} else //check if usersall commands
-			if(msg.match(/^([\/]usersall)/i)){
-				var cmdMsg = "";
-				var count = 0;
-				for(var vals in users){
+			});	
+		} else //check if usersall commands
+		if(msg.match(/^([\/]usersall)/i)){
+			var cmdMsg = "";
+			var count = 0;
+			db.collection("sessions").find({}).toArray(function(err, doc) {
+				doc.map(function(elem, index){
 					count++;
-				}
+				});
 				if(count > 1){
 					cmdMsg = "There are " + count + " concurrent global users.";
 				}
@@ -191,58 +207,70 @@ io.on("connection", function(socket){
 					cmdMsg = "There is " + count + " concurrent global user.";
 				}
 				io.to(socket.id).emit("command", cmdMsg);
-			} else //check if usersall commands
-			if(msg.match(/^([\/]room)\b/i)){
-				io.to(socket.id).emit("command", "/" + userRoom.split("/").pop() + "." );
-			} else //check if usersall commands
-			if(msg.match(/^([\/]roomall)/i)){
-				var roomStr = [];
-				rooms.map(function(elem) {
-					roomStr.push("<a href='" + elem + "'>" + elem.split("/").pop() + "</a>");
+			});
+		} else //check if usersall commands
+		if(msg.match(/^([\/]room)\b/i)){
+			io.to(socket.id).emit("command", "/" + userRoom.split("/").pop() + "." );
+		} else //check if usersall commands
+		if(msg.match(/^([\/]roomall)/i)){
+			var roomStr = [];
+			db.collection("sessions").find({}).toArray(function(err, doc) {
+				doc.map(function(elem, index){
+					var theRoom = elem.room;
+					roomStr.push("<a href='" + theRoom + "'>/" + theRoom.split("/").pop() + "</a>");					
 				});
-				io.to(socket.id).emit("command", "/" + roomStr.join(", ") + "." );
-			} else //default chat message
-			{
-				io.in(room).emit("chat message", users[socket.id].name, msg);
-				history.push(
-						{
-							"userName": users[socket.id],
-							"message": msg,
-							"time": new Date().getTime()
-						}
-					);
-				if(history.length > historyLimit){
-					history.shift();
-				}
-				//console.log(history);
+				io.to(socket.id).emit("command", roomStr.join(", ") + "." );
+			});
+		} else //default chat message
+		{
+			io.in(room).emit("chat message", name, msg);
+			history.push(
+					{
+						"userName": name,
+						"message": msg,
+						"time": new Date().getTime()
+					}
+				);
+			if(history.length > historyLimit){
+				history.shift();
 			}
+			//console.log(history);
 		}
-		console.log(users[socket.id].name + " - " + msg);
+		console.log(name + " - " + msg);
 	});//end chat message
 	//on user disconncet
 	socket.on("disconnect", function(){
-		if (users[socket.id]){
-			io.in(room).emit("update", users[socket.id].name + " has disconnected from the server.");
-			console.log(users[socket.id].name + " Disconnected.");
-			delete users[socket.id];
-			userCount = Object.keys(users).length;
-			rooms = purge.p(users, rooms);
-			console.log("current rooms: " + rooms);
-		}
+		db.collection("sessions").findOne({"_id": sessCookie}, function(err, doc) {
+			if(doc) {
+				db.collection("sessions").save({"_id": sessCookie, "username": doc.username, "room": null});
+				io.in(room).emit("update", doc.username + " has disconnected from the server.");
+				console.log(doc.username + " Disconnected.");
+				//delete users[socket.id];
+				userCount--;
+				rooms = purge.p(doc.username);
+				console.log("current rooms: " + rooms);				
+			}
+			//console.log(doc);
+		});
 	});
 });
 //emit chat messages
 io.emit("some event", {for: "everyone"});
 
 //routes
+//get
 app.get("/", routeTo.landingPage);
-app.get("/login", routeTo.signIn);
-app.get("/test", routeTo.test);
-app.post("/login", userSessions = routeTo.auth);
+app.get("/room", routeTo.landingPage);
+app.get("/login", routeTo.login);
+app.get("/signup", routeTo.signUp);
+app.get("/signout", routeTo.signOut);
 app.get("/howTo", routeTo.howTo);
-app.get("/goTo", routeTo.goTo);
 app.get("/room/:name", routeTo.chatPage);
 app.get("*", routeTo.notFound);
+//post
+app.post("/goTo", routeTo.goTo);
+app.post("/login", routeTo.auth);
+app.post("/signup", routeTo.insert);
 
 db.open(function(err, db) {
 	http.listen(port);

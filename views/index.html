@@ -11,7 +11,8 @@
 			<a class="button clickable" href="/howTo">See Info</a>
 			
 			<a class="button clickable" href="/{{sign}}">{{ signText }}</a>
-			<form method="get" action="/goTo">
+			<a class="button clickable {{ signup }}" href="/signup">Sign Up</a>
+			<form method="post" action="/goTo">
 				<label for="room">Enter A Room Name: </label>
 				<input type="text" name="room" placeholder="Type room name..."><br>
 				<input class="clickable" type="submit" value="Submit">

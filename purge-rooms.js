@@ -1,21 +1,23 @@
-module.exports = function(users, rooms) {
+module.exports = function(mongo, rooms) {
 	return {
-		p: function() {
+		p: function(user) {
 			var newRooms = [];
-			for(var key in users) {
-				var match = false;
-				for(i = 0; i < rooms.length; i++) {
-					if(rooms[i] === users[key].room) {
-						console.log(rooms[i] + " === " + users[key].room)
-						match = true;
+			db.collection("sessions").find({}).toArray( function(err, doc) {
+				if (err) throw err;
+				doc.map(function(elem, index) {
+					var match = false;
+					for(i = 0; i < rooms.length; i++) {
+						if(rooms[i] === elem.room) {
+							//console.log(rooms[i] + " === " + elem.room)
+							match = true;
+						}
 					}
-				}
-				if(match) {
-					newRooms.push(users[key].room);
-				}
-			}
-			rooms = newRooms;
-			return rooms;
+					if(match) {
+						newRooms.push(elem.room);
+					}
+				});
+			})
+		return rooms;
 		//end of purge
 		}
 	};

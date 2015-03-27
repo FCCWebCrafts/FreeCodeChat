@@ -1,40 +1,22 @@
 ~(function () {
-	var socket = io();
-	var userName;
-	var userList, listArray;
-	var regUser;
-	var room = window.location.href.match(/(http(s)?[:\/\/]*)([a-z0-9\-]*)([.:][a-z0-9\-]*)([.][a-z]{2,3})?([\/a-z0-9?=%_\-&#]*)?/ig)[0];
+	var socket = io(),
+	userName,
+	userList, listArray,
+	regUser,
+	room = window.location.href.match(/(http(s)?[:\/\/]*)([a-z0-9\-]*)([.:][a-z0-9\-]*)([.][a-z]{2,3})?([\/a-z0-9?=%_\-&#]*)?/ig)[0];
 	//set user name
-	/* good setup for validting user name for sign up - saving for later
-	function setUserName(){
-		userName = prompt("What's your name? Must be between 3-12 characters long.");
-		if(userName) {
-			if(userName.length <3 ||
-				userName.length >14 ||
-				userName.match(/[\[\]\`\~\|\<\>\s,\?\*\&\^%\$#@!\(\)\\\/\{\}=+\;\:\"\']/ig) ||
-				userName.match(/[\-\_\.]/ig) &&
-				userName.match(/[\-\_\.]/ig).length > 1 ){
-				alert("User name cannot contain special characters.\n\n Exceptions: - _ . \n\n Limited to 1 use of one of these.");
-				setUserName();
-			} else {
-				socket.emit("validate", userName);
-			}
-		}
-	}
-	*/
 	//validate user session
 	var sessCookie = document.cookie.split("=").pop();
-
 	socket.emit("validate", sessCookie );
 
 	socket.on("signin", function(){
 		alert("Please sign in");
-		window.location.replace("/signin");
+		window.location.replace("/login");
 	});
 
 	socket.on("validated", function(name){
 		userName = name;
-		socket.emit("join", sessCookie, room);
+		socket.emit("join", userName, room);
 		regUser = new RegExp("[@](" + userName + ")\\b", "gi");
 	});
 
@@ -93,7 +75,7 @@
 			$("#chat-box input[type='submit']").prop("disabled", true);
 			caretPosition = getCaretPos(this) - 1;
 		}
-		if ( $(this).val().charAt( getCaretPos(this) - 1).match(/[\s]/gi) || $(this).val().charAt( getCaretPos(this) - 1) === "" ){
+		if ( $(this).val().charAt( getCaretPos(this) - 1).match(/[\s]/gi) ){
 			//hide list box
 			$("#listBox").css({"display": "none"});
 			//re-enable submit button
@@ -142,12 +124,12 @@
 			$(".matched-user").removeClass("selected");
 			selection = $(this).data("index");
 			$(this).addClass("selected");
+		},
+		click: function(){
+			selectMention();
 		}
 	}, ".matched-user");
 	//mouse press on user mention
-	$(document).on("click", ".matched-user",function(){
-		selectMention();
-	});
 
 	function selectMention(){
 		//re-enable the submit button
@@ -217,7 +199,7 @@
 	}
 	//chat message submission
 	$('form').submit(function(event){
-		socket.emit("chat message", $("#msg").val(), room);
+		socket.emit("chat message", $("#msg").val(), room, userName);
 		$("#msg").val("");
 		event.preventDefault();
 	});
@@ -231,5 +213,4 @@
 
 	$("#msg").focus();
 
-	setUserName();
 }());
