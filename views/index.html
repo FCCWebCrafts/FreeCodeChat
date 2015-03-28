@@ -6,13 +6,16 @@
 	</head>
 	<body>
 		<div id="box">
-			<h1>Welcome To</h1>
+			<h1>Welcome{{ user }} To</h1>
 			<span class="big-title">Free Code Chat</span>
-			<a class="button" href="/howTo">See Info</a>
-			<form method="get" action="/goTo">
+			<a class="button clickable" href="/howTo">See Info</a>
+			
+			<a class="button clickable" href="/{{sign}}">{{ signText }}</a>
+			<a class="button clickable {{ signup }}" href="/signup">Sign Up</a>
+			<form method="post" action="/goTo">
 				<label for="room">Enter A Room Name: </label>
 				<input type="text" name="room" placeholder="Type room name..."><br>
-				<input type="submit" value="Submit">
+				<input class="clickable" type="submit" value="Submit">
 			</form>
 			<span class="fail-message">{{fail}}</span><br>
 			<span class="fine">(No special characters allowed, only a hyphen)</span>
@@ -21,5 +24,11 @@
 				<a href="{{ links }}">{{ links }}</a>
 			{% endfor %}
 		</div>
+		{{ stuff }}
+		<script type="text/javascript">
+			var p = document.getElementById("box");
+			var c = document.querySelector(".disabled");
+			p.removeChild(c);
+		</script>
 	</body>
 </html>
