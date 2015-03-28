@@ -43,7 +43,7 @@ history = [],
 historyLimit = 300,
 Server = MongoClient.Server,
 Db = MongoClient.Db,
-db = new Db("fcchat", new Server("ec2-23-23-244-144.compute-1.amazonaws.com", 27017));
+db = new Db("fcchat", new Server("ec2-23-23-244-144.compute-1.amazonaws.com", 5432));
 
 //require custom modules
 //
