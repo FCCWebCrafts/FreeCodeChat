@@ -43,7 +43,7 @@ history = [],
 historyLimit = 300,
 Server = MongoClient.Server,
 Db = MongoClient.Db,
-db = new Db("fcchat", new Server("localhost", 27017));
+db = new Db("fcchat", new Server("free-code-chat.herokuapp.com", 27017));
 
 //require custom modules
 //
@@ -275,4 +275,5 @@ app.post("/signup", routeTo.insert);
 db.open(function(err, db) {
 	http.listen(port);
 	console.log("server running at port:" + port + "");
+	console.log(process.env);
 });

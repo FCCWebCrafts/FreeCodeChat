@@ -78,7 +78,15 @@ module.exports = function(dir, pages, mongo) {
 					mongo.collection("users").findOne({"username": userReq.toLowerCase()}, function(err, doc) {
 						if (err) throw err;
 						if(!doc) {
-							bcrypt.hash(passReq, null, null, function(err, hash) {
+							var proc = 0;
+							bcrypt.hash(passReq, null, function() {
+								if(Math.ceil(proc) >= 100) {
+									console.log("Encryption done! " + Math.ceil(proc) + "%");
+								} else {
+									console.log("Encrypting... " + Math.ceil(proc) + "%");
+								}
+								proc += 1.0865;
+							}, function(err, hash) {
 								if(err) throw err;
 								mongo.collection("users").insert({"username": userReq, "password": hash });
 								res.redirect("/");
