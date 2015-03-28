@@ -275,5 +275,4 @@ app.post("/signup", routeTo.insert);
 db.open(function(err, db) {
 	http.listen(port);
 	console.log("server running at port:" + port + "");
-	console.log(process.env);
 });
