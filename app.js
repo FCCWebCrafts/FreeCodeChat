@@ -43,7 +43,7 @@ history = [],
 historyLimit = 300,
 Server = MongoClient.Server,
 Db = MongoClient.Db,
-db = new Db("fcchat", new Server("free-code-chat.herokuapp.com", 27017));
+db = new Db("fcchat", new Server("free-code-chat.herokuapp", 27017));
 
 //require custom modules
 //
