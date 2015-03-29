@@ -295,3 +295,13 @@ input[type="submit"] {
   background: rgba(50, 50, 50, .8);
   color: white;
 }
+.mini-link{
+  text-decoration: none;
+  color: rgba(0, 250, 190, 1);
+  background: rgba(0, 0, 0, .5);
+  padding: .3em;
+  border-radius: 10px;
+  -ms-border-radius: 10px;
+  -moz-border-radius: 10px;
+  -webkit-border-radius: 10px;
+}

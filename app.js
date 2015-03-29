@@ -1,4 +1,3 @@
-//requirements
 var express = require("express")
 , app		= express()
 , http		= require("http").Server(app)
@@ -19,45 +18,20 @@ var users = {};
 var rooms = [];
 var userCount = 0;
 var history = [];
-var historyLimit = 35;
+var historyLimit = 300;
 
-//route functions
-function landingPage(req, res){
-	res.setHeader("Content-Type", "text/html");
-	res.render("index.html", {"fail": "", "rooms": rooms });
-}
-function howTo(req, res){
-	res.setHeader("Content-Type", "text/html");
-	res.sendFile(__dirname + webPages + "info.html");
-}
-function goTo(req, res){
-	console.log(req.query);
-	res.setHeader("Content-Type", "text/html");
-	if( !req.query.room.match(/[\[\]\`\~\|\<\>\s,\?\*\&\^%\$#@!\(\)\\\/\{\}=+\;\:\"\'_.]/gi) ){
-		res.redirect("http://" + req.headers.host + "/" + req.query.room.toLowerCase() );
-	} else {
-		res.render("index", {"fail": "please enter a valid room name."} );
-	}
-}
-function chatPage(req, res){
-	res.setHeader("Content-Type", "text/html");
-	res.sendFile(__dirname + webPages + "chat.html");
-}
-//routes
-//app.get("/", index); ///////cleared route
-app.get("/", landingPage);
-app.get("/howTo", howTo);
-app.get("/goTo", goTo);
-app.get("/:name", chatPage);
-app.get("*", function(req, res){
-	res.sendFile(__dirname + webPages + "notfound.html", 404);
-});
+//require custom modules
+//require room purge function
+var purgeRooms = require("./purge-rooms"),
+purge = purgeRooms(users, rooms);
+//require route functions
+var route = require("./routes"),
+routeTo = route(__dirname, webPages, users);
+
 //socket
-
 //chat server connection
 io.on("connection", function(socket){
 	var room = socket.handshake.headers.referer;
-	socket.join(room);
 
 	socket.on("validate", function(name){
 		console.log("running validation...");
@@ -92,6 +66,7 @@ io.on("connection", function(socket){
 		} else
 		{
 			users[socket.id] = {"name": name, "room": room};
+			socket.join(room);
 			io.in(room).emit("update", users[socket.id].name + " has connected to the server!");
 			for(var log in history){
 				if(history[log].userName.room === userRoom) {
@@ -114,7 +89,6 @@ io.on("connection", function(socket){
 			for(var id in users){
 				var used = false;
 				for(i = 0; i < rooms.length; i++){
-					console.log(rooms[i]);
 					if(users[id].room === rooms[i]){used = true;}
 				};
 				if(!used){rooms.push(users[id].room);}
@@ -192,9 +166,19 @@ io.on("connection", function(socket){
 					cmdMsg = "There is " + count + " concurrent global user.";
 				}
 				io.to(socket.id).emit("command", cmdMsg);
+			} else //check if usersall commands
+			if(msg.match(/^([\/]room)\b/i)){
+				io.to(socket.id).emit("command", "/" + userRoom.split("/").pop() + "." );
+			} else //check if usersall commands
+			if(msg.match(/^([\/]roomall)/i)){
+				var roomStr = [];
+				rooms.map(function(elem) {
+					roomStr.push("<a href='" + elem + "'>" + "/" + elem.split("/").pop() + "</a>");
+				});
+				io.to(socket.id).emit("command", roomStr.join(", ") + "." );
 			} else //default chat message
 			{
-				io.in(room).emit("chat message", "" + users[socket.id].name, msg);
+				io.in(room).emit("chat message", users[socket.id].name, msg);
 				history.push(
 						{
 							"userName": users[socket.id],
@@ -217,11 +201,20 @@ io.on("connection", function(socket){
 			console.log(users[socket.id].name + " Disconnected.");
 			delete users[socket.id];
 			userCount = Object.keys(users).length;
+			rooms = purge.p(users, rooms);
+			console.log("current rooms: " + rooms);
 		}
 	});
 });
 //emit chat messages
 io.emit("some event", {for: "everyone"});
+
+//routes
+app.get("/", routeTo.landingPage);
+app.get("/howTo", routeTo.howTo);
+app.get("/goTo", routeTo.goTo);
+app.get("/:name", routeTo.chatPage);
+app.get("*", routeTo.notFound);
 
 http.listen(port);
 
