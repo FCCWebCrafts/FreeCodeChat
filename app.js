@@ -43,7 +43,7 @@ history = [],
 historyLimit = 300,
 Server = MongoClient.Server,
 Db = MongoClient.Db,
-db = new Db("dcmv9ukasfem5v", new Server("ec2-23-23-244-144.compute-1.amazonaws.com", 5432));
+db = new Db("fccaht", new Server("localhost", 27017));
 
 //require custom modules
 //
@@ -92,9 +92,7 @@ io.on("connection", function(socket){
 			return false;
 		} else
 		{
-			var temp = db.collection("sessions").find({"username": name});
-			temp.room = userRoom;
-			db.collection("sessions").save(temp);
+			db.collection("sessions").update({"_id": sessCookie}, { $set: { room: userRoom } });
 			socket.join(room);
 			io.in(room).emit("update", name + " has connected to the server!");
 			for(var log in history){
@@ -102,7 +100,6 @@ io.on("connection", function(socket){
 					io.to(socket.id).emit("chat log", history[log].time, history[log].username, history[log].message);
 				}
 			}
-			db.collection("sessions").save({"_id": sessCookie, "username": name, "room": userRoom});
 			db.collection("sessions").find({}).toArray(function(err, doc) {
 				if (err) throw err;
 				var toSub = [];
@@ -242,7 +239,7 @@ io.on("connection", function(socket){
 	socket.on("disconnect", function(){
 		db.collection("sessions").findOne({"_id": sessCookie}, function(err, doc) {
 			if(doc) {
-				db.collection("sessions").save({"_id": sessCookie, "username": doc.username, "room": null});
+				db.collection("sessions").update({"_id": sessCookie}, { $unset: { room: true } });
 				io.in(room).emit("update", doc.username + " has disconnected from the server.");
 				console.log(doc.username + " Disconnected.");
 				//delete users[socket.id];
