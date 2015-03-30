@@ -5,7 +5,9 @@
 	regUser,
 	windowFocus = true,
 	unread = 0,
-	originalTitle = $("title").html();
+	originalTitleMention = "█ " + $("title").html(),
+	originalTitle = $("title").html(),
+	showTitle = originalTitle;
 	room = window.location.href.match(/(http(s)?[:\/\/]*)([a-z0-9\-]*)([.:][a-z0-9\-]*)([.][a-z]{2,3})?([\/a-z0-9?=%_\-&#]*)?/ig)[0];
 	//set user name
 	function setUserName(){
@@ -63,7 +65,8 @@
 	$(window).focus(function() {
 		windowFocus = true;
 		unread = 0;
-		$("title").html(originalTitle);
+		showTitle = originalTitle;
+		$("title").html(showTitle);
 	}).blur(function() {
 		windowFocus = false;
 	});
@@ -159,20 +162,10 @@
 	socket.on("chat log", function(time, who, msg){
 		$("#messages").append($("<li class='chat'>").html("[<span class='log'>" + logDate(time) + "</span>] <span class='user'> " + who + "</span>: " + regexFilter(msg, who) ) );
 		$("#messages")[0].scrollTop = $("#messages")[0].scrollHeight;
-		if(!windowFocus) {
-			$("title").text("(" + unread + ") " + originalTitle);
-			unread++;
-		}
 	});
 	//socket response on chat message
 	socket.on("chat message", function(who, msg){
 		$("#messages").append($("<li class='chat'>").html("[" + getTimeNow() + "] <span class='user'> " + who + "</span>: " + regexFilter(msg, who) ) );
-		if(windowFocus) {
-			$("title").html(originalTitle);
-		} else {
-			unread++;
-			$("title").text("(" + unread + ") " + originalTitle);
-		}
 		scrollToBottom();
 	});
 	//socket response on update
@@ -209,7 +202,22 @@
 				$("body").append("<div class='notification'>"+person+" Mentioned You: "+sub+"</div>");
 			}
 			filter = filter.replace(regUser, "<span class='mention'>@"+userName+"</span>");
+			showTitle = originalTitleMention;
+			if(windowFocus) {
+				$("title").html(originalTitle);
+			} else {
+				unread++;
+				$("title").text( "(" + unread + ") " + showTitle);
+			}
 			killNot();
+		} else {
+			if(windowFocus) {
+				showTitle = originalTitle;
+				$("title").html(originalTitle);
+			} else {
+				unread++;
+				$("title").text("(" + unread + ") " + showTitle);
+			}
 		}
 		return filter;
 	}
