@@ -5,7 +5,9 @@
 	regUser,
 	windowFocus = true,
 	unread = 0,
-	originalTitle = $("title").html();
+	originalTitleMention = "█ " + $("title").html(),
+	originalTitle = $("title").html(),
+	showTitle = originalTitle;
 	room = window.location.href.match(/(http(s)?[:\/\/]*)([a-z0-9\-]*)([.:][a-z0-9\-]*)([.][a-z]{2,3})?([\/a-z0-9?=%_\-&#]*)?/ig)[0];
 	//set user name
 	//validate user session
@@ -64,6 +66,14 @@
 		listArray.pop();
 		userList = list;
 		$("#user-list").text(userList);
+	});
+	$(window).focus(function() {
+		windowFocus = true;
+		unread = 0;
+		showTitle = originalTitle;
+		$("title").html(showTitle);
+	}).blur(function() {
+		windowFocus = false;
 	});
 	//get caret positon
 	function getCaretPos(input) {
@@ -209,6 +219,22 @@
 			}
 			filter = filter.replace(regUser, "<span class='mention'>@"+userName+"</span>");
 			killNot();
+			showTitle = originalTitleMention;
+			if(windowFocus) {
+				$("title").html(originalTitle);
+			} else {
+				unread++;
+				$("title").text( "(" + unread + ") " + showTitle);
+			}
+			killNot();
+		} else {
+			if(windowFocus) {
+				showTitle = originalTitle;
+				$("title").html(originalTitle);
+			} else {
+				unread++;
+				$("title").text("(" + unread + ") " + showTitle);
+			}
 		}
 		return filter;
 	}
